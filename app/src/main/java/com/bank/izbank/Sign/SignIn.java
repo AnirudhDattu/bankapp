@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -37,7 +38,7 @@ import java.util.Stack;
 public class SignIn extends AppCompatActivity {
     private EditText userName,userPass;
     public static User mainUser;
-    public static ArrayList<User> allUsers;
+    public static ArrayList<User> allUsers = new ArrayList<>();
     private String billType;
     private String billAmount;
     private String billDate;
@@ -137,18 +138,18 @@ public class SignIn extends AppCompatActivity {
                 if(e!=null){
                     e.printStackTrace();
                 }else{
-                    bankAccounts = new ArrayList<>();
+                    ArrayList<BankAccount> accounts = new ArrayList<>();
                     if(objects.size()>0){
                         for(ParseObject object:objects){
 
-                            bankCash=object.getString("cash");
-                            bankAccountNo=object.getString("accountNo");
+                            String cash=object.getString("cash");
+                            String accountNo=object.getString("accountNo");
 
-                            BankAccount tempAccount = new BankAccount(bankAccountNo,Integer.parseInt(bankCash));
+                            BankAccount tempAccount = new BankAccount(accountNo,Integer.parseInt(cash));
 
-                            bankAccounts.add(tempAccount);
+                            accounts.add(tempAccount);
                         }
-                        user.setBankAccounts(bankAccounts);
+                        user.setBankAccounts(accounts);
                     }
                 }
             }
@@ -164,18 +165,18 @@ public class SignIn extends AppCompatActivity {
                 if(e!=null){
                     e.printStackTrace();
                 }else{
-                    creditCards = new ArrayList<>();
+                    ArrayList<CreditCard> cards = new ArrayList<>();
                     if(objects.size()>0){
                         for(ParseObject object:objects){
 
-                            cardNo=object.getString("creditCardNo");
-                            cardLimit=object.getString("limit");
+                            String cardNo=object.getString("creditCardNo");
+                            String limit=object.getString("limit");
 
-                            CreditCard tempCard = new CreditCard(cardNo,Integer.parseInt(cardLimit));
+                            CreditCard tempCard = new CreditCard(cardNo,Integer.parseInt(limit));
 
-                            creditCards.add(tempCard);
+                            cards.add(tempCard);
                         }
-                        user.setCreditCards(creditCards);
+                        user.setCreditCards(cards);
                     }
                 }
             }
@@ -191,7 +192,7 @@ public class SignIn extends AppCompatActivity {
                 if(e!=null){
                     e.printStackTrace();
                 }else{
-                    history = new Stack<>();
+                    Stack<History> historyStack = new Stack<>();
                     if(objects.size()>0){
                         for(ParseObject object:objects){
 
@@ -200,10 +201,65 @@ public class SignIn extends AppCompatActivity {
 
                             History tempHistory = new History(SignIn.mainUser.getId(), historyProcess, historyDate);
 
-                            history.push(tempHistory);
+                            historyStack.push(tempHistory);
                         }
-                        SignIn.mainUser.setHistory(history);
+                        SignIn.mainUser.setHistory(historyStack);
                     }
+                }
+            }
+        });
+    }
+
+    public void getAllUsers(Runnable onComplete){
+        allUsers.clear();
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("UserInfo");
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> objects, ParseException e) {
+                if(e == null){
+                    Log.d("SignIn", "Users found: " + objects.size());
+                    for(ParseObject object : objects){
+                        try {
+                            String name = object.getString("userRealName");
+                            String phone = object.getString("phone");
+                            String userId = object.getString("username");
+                            String address_string = object.getString("address");
+                            if (address_string == null) address_string = "";
+                            String[] str = address_string.split(" ");
+                            Address address;
+                            if (str.length >= 8) {
+                                address = new Address(str[0], str[1], Integer.parseInt(str[2]), Integer.parseInt(str[3]), Integer.parseInt(str[4]), str[5], str[6], str[7]);
+                            } else {
+                                address = new Address("", "", 0, 0, 0, "", "", "");
+                            }
+                            String jobName = object.getString("job");
+                            String maxCreditAmount = object.getString("maxCreditAmount");
+                            String maxCreditInstallment = object.getString("maxCreditInstallment");
+                            String interestRate = object.getString("interestRate");
+                            Job tempJob = new Job(jobName, maxCreditAmount, maxCreditInstallment, interestRate);
+
+                            User user = new User(name, userId, phone, address, tempJob);
+                            ParseFile parseFile = (ParseFile) object.get("images");
+                            if (parseFile != null) {
+                                parseFile.getDataInBackground((data, e1) -> {
+                                    if (data != null && e1 == null) {
+                                        Bitmap downloadedImage = BitmapFactory.decodeByteArray(data, 0, data.length);
+                                        user.setPhoto(downloadedImage);
+                                    }
+                                });
+                            }
+                            getBankAccounts(user);
+                            getCreditCards(user);
+                            allUsers.add(user);
+                        } catch (Exception ex) {
+                            Log.e("SignIn", "Error parsing user: " + ex.getMessage());
+                        }
+                    }
+                    if (onComplete != null) onComplete.run();
+                } else {
+                    Log.e("SignIn", "Query error: " + e.getMessage());
+                    Toast.makeText(SignIn.this, "Error fetching users: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    if (onComplete != null) onComplete.run();
                 }
             }
         });
@@ -218,6 +274,18 @@ public class SignIn extends AppCompatActivity {
                 if(e !=null){
                     Toast.makeText(getApplicationContext(),e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
                 }else{
+                    if (userName.getText().toString().equals("admin") && userPass.getText().toString().equals("admin123")) {
+                        mainUser = new User();
+                        mainUser.setName("Admin");
+                        mainUser.setId("admin");
+                        mainUser.setHistory(new Stack<>());
+                        getAllUsers(() -> {
+                            Intent intent = new Intent(SignIn.this, AdminPanelActivity.class);
+                            startActivity(intent);
+                            finish();
+                        });
+                        return;
+                    }
 
                     ParseQuery<ParseObject> query=ParseQuery.getQuery("UserInfo");
                     query.whereEqualTo("username",userName.getText().toString());

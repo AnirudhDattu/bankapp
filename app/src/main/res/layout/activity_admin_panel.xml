@@ -1,184 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@color/apple_background">
 
-    <LinearLayout
-        android:id="@+id/layout_user_profile"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/genel"
-
-        android:orientation="horizontal"
-        android:padding="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/icon_bank_whiteback">
-
-        </ImageView>
+        android:background="@color/apple_background"
+        app:elevation="0dp">
 
         <LinearLayout
-            android:layout_marginLeft="5dp"
-            android:layout_gravity="center"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/text_view_date_admin"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="DATE"
-                android:layout_gravity="center"
-                android:textSize="16dp"
-                android:textStyle="bold"
-                android:textColor="@color/white"></TextView>
-
-            <TextView
-                android:id="@+id/text_view_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="HELLO, ADMIN."
-                android:textSize="16dp"
-                android:textStyle="bold"
-                android:textColor="@color/white"></TextView>
-        </LinearLayout>
-
-
-
-
-    </LinearLayout>
-
-
-    <LinearLayout
-        android:id="@+id/layout_functions_main_screen"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/layout_user_profile"
-        app:layout_constraintStart_toStartOf="parent"
-        android:orientation="horizontal"
-        android:background="@drawable/user1_corner_rounded"
-        android:gravity=""
-        android:padding="20dp">
-
-        <LinearLayout
-            android:id="@+id/linear_layout_history"
             android:orientation="vertical"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:padding="24dp">
 
-            >
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <ImageView
+                <TextView
+                    android:id="@+id/text_view_date_admin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Monday, 24 May"
+                    android:textColor="@color/apple_text_secondary"
+                    android:textSize="13sp"
+                    android:textAllCaps="true" />
 
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:background="@drawable/icon_history"
+                <TextView
+                    android:id="@+id/text_view_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/text_view_date_admin"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="sans-serif-black"
+                    android:text="HELLO, ADMIN."
+                    android:textColor="@color/apple_text_primary"
+                    android:textSize="28sp" />
 
-
-                ></ImageView>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="HISTORY"
-                android:textColor="@color/white"
-                android:textStyle="bold"></TextView>
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_user_def"
+                    android:padding="2dp"
+                    app:strokeColor="@color/apple_grey_light"
+                    app:strokeWidth="1dp"
+                    app:shapeAppearanceOverlay="@style/CircleImage" />
+            </RelativeLayout>
         </LinearLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
-
-
-
-        <LinearLayout
-            android:id="@+id/linear_layout_log_out"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:onClick="logOut"
-
-            android:orientation="vertical">
-
-            <ImageView
-
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:background="@drawable/icon_logout"
-
-
-                ></ImageView>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="LOGOUT"
-                android:textColor="@color/white"
-                android:textStyle="bold"></TextView>
-        </LinearLayout>
-
-
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_margin="5dp"
-        android:background="@drawable/frame"
-        app:layout_constraintTop_toBottomOf="@id/layout_functions_main_screen"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:orientation="vertical"
-        >
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
-
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            >
+            android:orientation="vertical"
+            android:paddingBottom="24dp">
+
+            <!-- Admin Actions Row - Smaller and Cleaner -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/linear_layout_history"
+                    style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="History"
+                    android:textAllCaps="false"
+                    android:textColor="@color/apple_text_primary"
+                    android:fontFamily="sans-serif-medium"
+                    app:icon="@drawable/ic_history_apple"
+                    app:iconTint="@color/apple_blue"
+                    app:backgroundTint="@color/white"
+                    app:cornerRadius="12dp"
+                    app:strokeColor="@color/apple_grey_light"
+                    app:strokeWidth="1dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/linear_layout_log_out"
+                    style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="Logout"
+                    android:textAllCaps="false"
+                    android:textColor="@color/profilePrimaryDark"
+                    android:fontFamily="sans-serif-medium"
+                    app:icon="@drawable/icon_logout"
+                    app:iconTint="@color/profilePrimaryDark"
+                    app:backgroundTint="@color/white"
+                    app:cornerRadius="12dp"
+                    app:strokeColor="@color/apple_grey_light"
+                    app:strokeWidth="1dp"
+                    android:onClick="logOut" />
+            </LinearLayout>
 
             <TextView
-
-                android:layout_weight="1.0"
-                android:layout_marginLeft="10dp"
-                android:id="@+id/text_view_portfolio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="USERS"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                android:textSize="25dp"></TextView>
+                android:layout_marginTop="32dp"
+                android:layout_marginStart="24dp"
+                android:fontFamily="sans-serif-black"
+                android:text="Registered Users"
+                android:textColor="@color/apple_text_primary"
+                android:textSize="20sp" />
 
-
-
-
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerview_user"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:clipToPadding="false"
+                tools:listitem="@layout/user_admin_card_view" />
 
         </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerview_user"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:layout_editor_absoluteX="167dp"
-            tools:layout_editor_absoluteY="213dp"/>
-
-    </LinearLayout>
-
-
-
-
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

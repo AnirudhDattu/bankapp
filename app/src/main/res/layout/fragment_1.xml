@@ -160,7 +160,7 @@
                         <ImageView
                             android:layout_width="28dp"
                             android:layout_height="28dp"
-                            android:src="@drawable/icon_money_transfer"
+                            android:src="@drawable/ic_send_money"
                             app:tint="@color/white" />
                         <TextView
                             android:layout_width="wrap_content"
@@ -196,7 +196,7 @@
                         <ImageView
                             android:layout_width="28dp"
                             android:layout_height="28dp"
-                            android:src="@drawable/icon_plus"
+                            android:src="@drawable/ic_request_apple"
                             app:tint="@color/apple_blue" />
                         <TextView
                             android:layout_width="wrap_content"
@@ -231,7 +231,7 @@
                         <ImageView
                             android:layout_width="28dp"
                             android:layout_height="28dp"
-                            android:src="@drawable/icon_history"
+                            android:src="@drawable/ic_history_apple"
                             app:tint="@color/apple_text_primary" />
                         <TextView
                             android:layout_width="wrap_content"
@@ -264,7 +264,7 @@
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:layout_alignParentEnd="true"
-                    android:src="@drawable/icon_plus"
+                    android:src="@drawable/ic_add_apple"
                     app:tint="@color/apple_blue" />
             </RelativeLayout>
 
@@ -297,7 +297,7 @@
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:layout_alignParentEnd="true"
-                    android:src="@drawable/icon_plus"
+                    android:src="@drawable/ic_add_apple"
                     app:tint="@color/apple_blue" />
             </RelativeLayout>
 

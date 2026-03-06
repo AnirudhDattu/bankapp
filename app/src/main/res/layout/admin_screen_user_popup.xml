@@ -1,90 +1,139 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@color/white">
 
+    <TextView
+        android:id="@+id/popup_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Account Details"
+        android:textColor="@color/apple_text_primary"
+        android:textSize="22sp"
+        android:fontFamily="sans-serif-black"
+        android:layout_marginBottom="20dp"/>
 
+    <!-- Info Row: Phone -->
     <LinearLayout
-        android:layout_margin="3dp"
-
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:gravity="center"
-        android:orientation="horizontal">
-
-
-
-
-        <LinearLayout
-
-            android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingVertical="8dp">
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/icon_phone"
+            app:tint="@color/apple_blue" />
+        <TextView
+            android:id="@+id/text_view_phone_number"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/text_view_phone_number"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:text="Phone: "
-                android:textColor="@color/black"
-                ></TextView>
-
-
-            <TextView
-                android:id="@+id/text_view_adres"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_gravity="center"
-                android:layout_marginTop="10dp"
-                android:text="adres"
-                android:textColor="@color/black"></TextView>
-
-            <TextView
-                android:id="@+id/text_view_job"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_gravity="center"
-                android:layout_marginTop="10dp"
-                android:text="job"
-                android:textColor="@color/black"></TextView>
-
-            <TextView
-                android:id="@+id/text_view_bank_account_counter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_gravity="center"
-                android:layout_marginTop="10dp"
-                android:text="adres"
-                android:textColor="@color/black"></TextView>
-            <TextView
-                android:id="@+id/text_view_credit_card_counter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_gravity="center"
-                android:layout_marginTop="10dp"
-                android:text="adres"
-                android:textColor="@color/black"></TextView>
-            <TextView
-                android:id="@+id/text_view_interest_rate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_gravity="center"
-                android:layout_marginTop="10dp"
-                android:text="adres"
-                android:textColor="@color/black"></TextView>
-
-
-        </LinearLayout>
+            android:layout_marginStart="12dp"
+            android:text="+1 234 567 890"
+            android:textColor="@color/apple_text_primary"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif-medium" />
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/apple_grey_light" android:layout_marginVertical="4dp"/>
+
+    <!-- Info Row: Address -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="top"
+        android:paddingVertical="8dp">
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="2dp"
+            android:src="@drawable/icon_address"
+            app:tint="@color/apple_blue" />
+        <TextView
+            android:id="@+id/text_view_adres"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="Address Details"
+            android:textColor="@color/apple_text_primary"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif-medium" />
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/apple_grey_light" android:layout_marginVertical="4dp"/>
+
+    <!-- Info Row: Job -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingVertical="8dp">
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/icon_profession"
+            app:tint="@color/apple_blue" />
+        <TextView
+            android:id="@+id/text_view_job"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="Profession"
+            android:textColor="@color/apple_text_primary"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif-medium" />
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/apple_grey_light" android:layout_marginVertical="4dp"/>
+
+    <!-- Accounts and Credits Summary -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@drawable/apple_card_bg"
+        android:backgroundTint="#F9F9FB">
+
+        <TextView
+            android:id="@+id/text_view_bank_account_counter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bank Accounts"
+            android:textColor="@color/apple_text_secondary"
+            android:textSize="13sp"
+            android:lineSpacingExtra="4dp" />
+
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/apple_grey_light" android:layout_marginVertical="8dp"/>
+
+        <TextView
+            android:id="@+id/text_view_credit_card_counter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Credit Cards"
+            android:textColor="@color/apple_text_secondary"
+            android:textSize="13sp"
+            android:lineSpacingExtra="4dp" />
+    </LinearLayout>
+
+    <!-- Interest Details -->
+    <TextView
+        android:id="@+id/text_view_interest_rate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Interest Details"
+        android:textColor="@color/apple_text_secondary"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:fontFamily="sans-serif" />
+
+</LinearLayout>
