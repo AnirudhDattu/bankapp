@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/apple_background"
+    tools:context=".Sign.SignUpActivity">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="24dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Create Account"
+                        android:textColor="@color/apple_text_primary"
+                        android:textSize="24sp" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/sign_up_user_photo"
+                        android:layout_width="96dp"
+                        android:layout_height="96dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="24dp"
+                        android:onClick="selectImage"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_user_def"
+                        app:shapeAppearanceOverlay="@style/CircleImage" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="8dp"
+                        android:text="Tap to upload photo"
+                        android:textColor="@color/apple_blue"
+                        android:textSize="12sp" />
+
+                    <!-- Inputs -->
+                    <EditText
+                        android:id="@+id/sign_up_edit_user_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="24dp"
+                        android:background="@drawable/apple_edittext_bg"
+                        android:hint="Full Name"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textSize="15sp" />
+
+                    <EditText
+                        android:id="@+id/sign_up_edit_user_email"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/apple_edittext_bg"
+                        android:hint="ID Number"
+                        android:inputType="numberDecimal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textSize="15sp" />
+
+                    <EditText
+                        android:id="@+id/sign_up_edit_user_password"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/apple_edittext_bg"
+                        android:hint="Password"
+                        android:inputType="textPassword"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textSize="15sp" />
+
+                    <EditText
+                        android:id="@+id/edittext_phone_sign_up"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/apple_edittext_bg"
+                        android:hint="Phone Number"
+                        android:inputType="phone"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textSize="15sp" />
+
+                    <!-- Address & Job Selection -->
+                    <TextView
+                        android:id="@+id/signup_address"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/apple_edittext_bg"
+                        android:gravity="center_vertical"
+                        android:onClick="createAddress"
+                        android:paddingStart="16dp"
+                        android:text="Tap to set Address"
+                        android:textColor="@color/apple_text_secondary"
+                        android:textSize="15sp" />
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/apple_edittext_bg">
+
+                        <Spinner
+                            android:id="@+id/sign_up_spinner"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@null"
+                            android:paddingStart="12dp" />
+                    </FrameLayout>
+
+                    <Button
+                        android:id="@+id/sign_up_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:layout_marginTop="32dp"
+                        android:background="@drawable/apple_button_bg"
+                        android:fontFamily="sans-serif-medium"
+                        android:onClick="signUp"
+                        android:text="Create Account"
+                        android:textAllCaps="false"
+                        android:textColor="@color/white"
+                        android:textSize="17sp"
+                        app:backgroundTint="@null" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="24dp"
+                android:onClick="signUp"
+                android:text="Already have an account?"
+                android:textColor="@color/apple_text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="sans-serif-medium"
+                android:onClick="finish"
+                android:padding="8dp"
+                android:text="Sign In"
+                android:textColor="@color/apple_blue"
+                android:textSize="15sp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
