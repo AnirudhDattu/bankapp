@@ -38,7 +38,7 @@ import java.util.Stack;
 
 public class SignIn extends AppCompatActivity {
     // --- DEBUG AUTO-LOGIN OPTIONS ---
-    private static final boolean DEBUG_AUTO_LOGIN = true; // Set to true to skip login
+    private static final boolean DEBUG_AUTO_LOGIN = false; // Set to true to skip login
     private static final String DEBUG_USER = "001";
     private static final String DEBUG_PASS = "001";
     // --------------------------------

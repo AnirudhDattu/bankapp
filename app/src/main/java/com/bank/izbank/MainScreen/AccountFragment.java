@@ -2,11 +2,16 @@ package com.bank.izbank.MainScreen;
 
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.InputType;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -31,6 +36,7 @@ import com.bank.izbank.Sign.SignIn;
 import com.bank.izbank.UserInfo.History;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieEntry;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -317,190 +323,230 @@ public class AccountFragment extends Fragment {
 
     public void click(){
         linear_layout_history.setOnClickListener(v -> {
-            AlertDialog.Builder history_popup=new AlertDialog.Builder(getContext());
-            history_popup.setTitle("HISTORY");
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), android.R.style.Theme_Material_Light_NoActionBar_Fullscreen);
             LayoutInflater inflater = getActivity().getLayoutInflater();
-            View dialogView= inflater.inflate(R.layout.history_popup, null);
-            history_popup.setView(dialogView);
+            View dialogView = inflater.inflate(R.layout.history_popup, null);
+            builder.setView(dialogView);
+            
+            AlertDialog dialog = builder.create();
+            
+            dialogView.findViewById(R.id.btn_close_history).setOnClickListener(view -> dialog.dismiss());
+            
             recyclerViewHistory = dialogView.findViewById(R.id.history_recycler_view);
             recyclerViewHistory.setLayoutManager(new LinearLayoutManager(getActivity()));
 
             historyAdapter=new HistoryAdapter(stackToArrayList(mainUser.getHistory()),getActivity(),getContext());
             recyclerViewHistory.setAdapter(historyAdapter);
-            historyAdapter.notifyDataSetChanged();
-            history_popup.create().show();
+            
+            dialog.show();
         });
 
         add_bank_account.setOnClickListener(v -> {
             if (myBankAccount.size()>=5){
-                Toast.makeText(getContext(), "YOU CANT ADD MORE THAN 5 BANK ACCOUNT", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Limit Reached: Max 5 accounts.", Toast.LENGTH_LONG).show();
             }
             else{
-                final EditText editText = new EditText(getContext());
-                editText.setHint("0");
-                editText.setInputType(InputType.TYPE_CLASS_NUMBER);
-                AlertDialog.Builder ad = new AlertDialog.Builder(getContext());
-                ad.setTitle("Initial Deposit");
-                ad.setIcon(R.drawable.icon_save_money);
-                ad.setView(editText);
-                ad.setNegativeButton("ADD", (dialogInterface, i) -> {
+                showModernInputDialog("Initial Deposit", "Enter the amount for your new account.", "ADD", amountStr -> {
                     try {
-                        int amount = Integer.parseInt(editText.getText().toString());
+                        int amount = Integer.parseInt(amountStr);
                         myBankAccount.add(new BankAccount(amount));
-                    }catch (NumberFormatException e){
+                    } catch (NumberFormatException e){
                         myBankAccount.add(new BankAccount(0));
                     }
-                    MyBankAccountAdapter myBankAccountAdapter = new MyBankAccountAdapter(myBankAccount,getActivity() );
-                    recyclerViewbankaccount.setAdapter(myBankAccountAdapter);
-                    setTotalMoney(myBankAccount);
-                    
+                    updateBankAccountList();
                     accountsToDatabase(myBankAccount.get(myBankAccount.size()-1));
-                    History hs = new History(mainUser.getId(),"New Bank Account Added.", Calendar.getInstance().getTime());
-                    mainUser.getHistory().push(hs);
-                    historyToDatabase(hs);
+                    recordHistory("New Bank Account Added.");
                 });
-                ad.create().show();
             }
         });
 
         add_credit_card.setOnClickListener(v -> {
             if (myCreditCard.size()>=5){
-                Toast.makeText(getContext(), "YOU CANT ADD MORE THAN 5 CREDIT CARD", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Limit Reached: Max 5 cards.", Toast.LENGTH_LONG).show();
             }
             else{
-                final EditText editText = new EditText(getContext());
-                editText.setHint("0");
-                editText.setInputType(InputType.TYPE_CLASS_NUMBER);
-                AlertDialog.Builder ad = new AlertDialog.Builder(getContext());
-                ad.setTitle("Credit Card Limit");
-                ad.setIcon(R.drawable.icon_credit_card);
-                ad.setView(editText);
-                ad.setNegativeButton("ADD", (dialogInterface, i) -> {
+                showModernInputDialog("Credit Limit", "Set the initial limit for your new card.", "ADD", limitStr -> {
                     try {
-                        int limit = Integer.parseInt(editText.getText().toString());
+                        int limit = Integer.parseInt(limitStr);
                         myCreditCard.add(new CreditCard(limit));
-                    }catch (NumberFormatException e){
+                    } catch (NumberFormatException e){
                         myCreditCard.add(new CreditCard(0));
                     }
-                    MyCreditCardAdapter myCreditCardAdapter = new MyCreditCardAdapter(myCreditCard,getActivity(),myBankAccount ,recyclerViewbankaccount);
-                    recyclerView.setAdapter(myCreditCardAdapter);
-
+                    updateCreditCardList();
                     cardsToDatabase(myCreditCard.get(myCreditCard.size()-1));
-                    History hs = new History(mainUser.getId(),"New Credit Card Added.", Calendar.getInstance().getTime());
-                    mainUser.getHistory().push(hs);
-                    historyToDatabase(hs);
+                    recordHistory("New Credit Card Added.");
                 });
-                ad.create().show();
             }
         });
 
         linear_layout_request_money.setOnClickListener(v -> {
             if (myBankAccount.size()==0){
-                AlertDialog.Builder ad = new AlertDialog.Builder(getContext());
-                ad.setTitle("You dont have any bank account.");
-                ad.setNegativeButton("CLOSE", null);
-                ad.create().show();
+                showModernMessageDialog("No Accounts", "Please add a bank account first.");
             }
             else{
-                final EditText editText = new EditText(getContext());
-                editText.setHint("Amount to Request");
-                editText.setInputType(InputType.TYPE_CLASS_NUMBER);
-
-                AlertDialog.Builder ad = new AlertDialog.Builder(getContext());
-                ad.setTitle("Select Target Account");
-                ad.setView(editText);
-                String[] items = new String[myBankAccount.size()];
-                for (int i =0; i<myBankAccount.size();i++){
-                    items[i] = myBankAccount.get(i).getAccountno() + " (Balance: ₹" + myBankAccount.get(i).getCash() + ")";
-                }
-                final int[] checkedItem = {0};
-                ad.setSingleChoiceItems(items, checkedItem[0], (dialogInterface, i) -> checkedItem[0] = i);
-                ad.setNegativeButton("Request", (dialogInterface, i) -> {
-                    int pos = checkedItem[0];
-                    try {
-                        int amount = Integer.parseInt(editText.getText().toString());
-                        myBankAccount.get(pos).setCash(myBankAccount.get(pos).getCash() + amount);
-                        updateBankAccount(myBankAccount.get(pos));
-                        MyBankAccountAdapter myBankAccountAdapter = new MyBankAccountAdapter(myBankAccount,getActivity() );
-                        recyclerViewbankaccount.setAdapter(myBankAccountAdapter);
-                        setTotalMoney(myBankAccount);
-                        History hs = new History(mainUser.getId(),"Money Requested: ₹" + amount, Calendar.getInstance().getTime());
-                        mainUser.getHistory().push(hs);
-                        historyToDatabase(hs);
-                    } catch (Exception e) {}
+                showModernAccountSelectionDialog("Request Money", pos -> {
+                    showModernInputDialog("Request Amount", "How much would you like to request?", "REQUEST", amountStr -> {
+                        try {
+                            int amount = Integer.parseInt(amountStr);
+                            myBankAccount.get(pos).setCash(myBankAccount.get(pos).getCash() + amount);
+                            updateBankAccount(myBankAccount.get(pos));
+                            updateBankAccountList();
+                            recordHistory("Money Requested: ₹" + amount);
+                        } catch (Exception e) {}
+                    });
                 });
-                ad.create().show();
             }
         });
 
         linear_layout_send_money.setOnClickListener(v -> {
-            AlertDialog.Builder ad = new AlertDialog.Builder(getContext());
-            ad.setTitle("Transfer Money");
-            String arr[] = {"Between My Accounts", "To Another Person"};
-            ad.setItems(arr, (dialog, which) -> {
-                if (which == 0) transferBetweenOwn();
-                else transferToAnother();
-            });
-            ad.create().show();
+            showModernSendMoneySelection();
         });
     }
 
-    private void transferBetweenOwn() {
-        AlertDialog.Builder ad2 = new AlertDialog.Builder(getContext());
-        ad2.setTitle("Source Account");
-        String[] items = new String[myBankAccount.size()];
-        for (int i =0; i<myBankAccount.size();i++){
-            items[i] = myBankAccount.get(i).getAccountno() + " (₹" + myBankAccount.get(i).getCash() + ")";
+    private void showModernInputDialog(String title, String message, String actionText, ModernInputListener listener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.ModernDialog);
+        View view = getLayoutInflater().inflate(R.layout.dialog_modern_input, null);
+        builder.setView(view);
+
+        TextView titleView = view.findViewById(R.id.dialog_title);
+        TextView messageView = view.findViewById(R.id.dialog_message);
+        EditText input = view.findViewById(R.id.dialog_input);
+        MaterialButton btnAction = view.findViewById(R.id.dialog_btn_action);
+
+        titleView.setText(title);
+        messageView.setText(message);
+        btnAction.setText(actionText);
+
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        btnAction.setOnClickListener(v -> {
+            listener.onInput(input.getText().toString());
+            dialog.dismiss();
+        });
+
+        dialog.show();
+        
+        // Make input dialog wider
+        Window window = dialog.getWindow();
+        if (window != null) {
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+            lp.copyFrom(window.getAttributes());
+            lp.width = (int) (getResources().getDisplayMetrics().widthPixels * 0.9);
+            window.setAttributes(lp);
         }
-        final int[] from = {0};
-        ad2.setSingleChoiceItems(items, from[0], (dialogInterface, i) -> from[0] = i);
-        ad2.setNegativeButton("CONTINUE", (dialog, which) -> {
-            AlertDialog.Builder ad3 = new AlertDialog.Builder(getContext());
-            ad3.setTitle("Destination Account");
-            final int[] to = {0};
-            ad3.setSingleChoiceItems(items, to[0], (dialogInterface, i) -> to[0] = i);
-            ad3.setNegativeButton("CONTINUE", (dialog1, which1) -> {
-                final EditText editText = new EditText(getContext());
-                editText.setHint("Amount");
-                editText.setInputType(InputType.TYPE_CLASS_NUMBER);
-                AlertDialog.Builder ad4 = new AlertDialog.Builder(getContext());
-                ad4.setTitle("Enter Amount");
-                ad4.setView(editText);
-                ad4.setNegativeButton("SEND", (dialog2, which2) -> {
+    }
+
+    private void showModernAccountSelectionDialog(String title, ModernSelectionListener listener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.ModernDialog);
+        View view = getLayoutInflater().inflate(R.layout.dialog_modern_selection, null);
+        builder.setView(view);
+
+        TextView titleView = view.findViewById(R.id.dialog_title);
+        titleView.setText(title);
+        
+        RecyclerView rv = view.findViewById(R.id.dialog_recycler);
+        rv.setLayoutManager(new LinearLayoutManager(getContext()));
+        
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        rv.setAdapter(new ModernAccountAdapter(myBankAccount, pos -> {
+            listener.onSelected(pos);
+            dialog.dismiss();
+        }));
+
+        dialog.show();
+        
+        // Make selection dialog wider
+        Window window = dialog.getWindow();
+        if (window != null) {
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+            lp.copyFrom(window.getAttributes());
+            lp.width = (int) (getResources().getDisplayMetrics().widthPixels * 0.9);
+            window.setAttributes(lp);
+        }
+    }
+
+    private void showModernSendMoneySelection() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.ModernDialog);
+        View view = getLayoutInflater().inflate(R.layout.dialog_modern_transfer_type, null);
+        builder.setView(view);
+
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        view.findViewById(R.id.btn_transfer_internal).setOnClickListener(v -> {
+            dialog.dismiss();
+            transferBetweenOwn();
+        });
+        view.findViewById(R.id.btn_transfer_external).setOnClickListener(v -> {
+            dialog.dismiss();
+            transferToAnother();
+        });
+
+        dialog.show();
+        
+        // Make transfer type dialog wider
+        Window window = dialog.getWindow();
+        if (window != null) {
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+            lp.copyFrom(window.getAttributes());
+            lp.width = (int) (getResources().getDisplayMetrics().widthPixels * 0.9);
+            window.setAttributes(lp);
+        }
+    }
+
+    private void showModernMessageDialog(String title, String message) {
+        new AlertDialog.Builder(getContext(), R.style.ModernDialog)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+    private void updateBankAccountList() {
+        MyBankAccountAdapter adapter = new MyBankAccountAdapter(myBankAccount, getActivity());
+        recyclerViewbankaccount.setAdapter(adapter);
+        setTotalMoney(myBankAccount);
+    }
+
+    private void updateCreditCardList() {
+        MyCreditCardAdapter adapter = new MyCreditCardAdapter(myCreditCard, getActivity(), myBankAccount, recyclerViewbankaccount);
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void recordHistory(String process) {
+        History hs = new History(mainUser.getId(), process, Calendar.getInstance().getTime());
+        mainUser.getHistory().push(hs);
+        historyToDatabase(hs);
+        setupCarousel();
+    }
+
+    private void transferBetweenOwn() {
+        showModernAccountSelectionDialog("Source Account", from -> {
+            showModernAccountSelectionDialog("Destination Account", to -> {
+                showModernInputDialog("Transfer Amount", "Enter amount to move.", "TRANSFER", amountStr -> {
                     try {
-                        int amount = Integer.parseInt(editText.getText().toString());
-                        if (amount <= myBankAccount.get(from[0]).getCash()) {
-                            myBankAccount.get(to[0]).setCash(myBankAccount.get(to[0]).getCash() + amount);
-                            myBankAccount.get(from[0]).setCash(myBankAccount.get(from[0]).getCash() - amount);
-                            updateBankAccount(myBankAccount.get(from[0]));
-                            updateBankAccount(myBankAccount.get(to[0]));
-                            setTotalMoney(myBankAccount);
-                            MyBankAccountAdapter adapter = new MyBankAccountAdapter(myBankAccount, getActivity());
-                            recyclerViewbankaccount.setAdapter(adapter);
-                            History hs = new History(mainUser.getId(),"Internal Transfer: ₹" + amount, Calendar.getInstance().getTime());
-                            mainUser.getHistory().push(hs);
-                            historyToDatabase(hs);
+                        int amount = Integer.parseInt(amountStr);
+                        if (amount <= myBankAccount.get(from).getCash()) {
+                            myBankAccount.get(to).setCash(myBankAccount.get(to).getCash() + amount);
+                            myBankAccount.get(from).setCash(myBankAccount.get(from).getCash() - amount);
+                            updateBankAccount(myBankAccount.get(from));
+                            updateBankAccount(myBankAccount.get(to));
+                            updateBankAccountList();
+                            recordHistory("Internal Transfer: ₹" + amount);
                         } else {
                             Toast.makeText(getApplicationContext(), "Insufficient funds", Toast.LENGTH_SHORT).show();
                         }
                     } catch (Exception e) {}
                 });
-                ad4.create().show();
             });
-            ad3.create().show();
         });
-        ad2.show();
     }
 
     private void transferToAnother() {
-        final EditText editText = new EditText(getContext());
-        editText.setHint("Recipient Account Number");
-        editText.setInputType(InputType.TYPE_CLASS_NUMBER);
-        AlertDialog.Builder typeAccountNo = new AlertDialog.Builder(getContext());
-        typeAccountNo.setTitle("External Transfer");
-        typeAccountNo.setView(editText);
-        typeAccountNo.setNegativeButton("CONTINUE", (dialog, which) -> {
-            String accNo = editText.getText().toString();
+        showModernInputDialog("External Transfer", "Enter recipient account number.", "CONTINUE", accNo -> {
             ParseQuery<ParseObject> query = ParseQuery.getQuery("BankAccount");
             query.whereEqualTo("accountNo", accNo);
             query.findInBackground((objects, e) -> {
@@ -509,53 +555,31 @@ public class AccountFragment extends Fragment {
                     String recipientId = obj.getString("userId");
                     int recipientCash = Integer.parseInt(obj.getString("cash"));
                     
-                    AlertDialog.Builder adFrom = new AlertDialog.Builder(getContext());
-                    adFrom.setTitle("Select Source Account");
-                    String[] items = new String[myBankAccount.size()];
-                    for (int i =0; i<myBankAccount.size();i++){
-                        items[i] = myBankAccount.get(i).getAccountno() + " (₹" + myBankAccount.get(i).getCash() + ")";
-                    }
-                    final int[] from = {0};
-                    adFrom.setSingleChoiceItems(items, from[0], (dialog1, which1) -> from[0] = which1);
-                    adFrom.setNegativeButton("CONTINUE", (dialog1, which1) -> {
-                        final EditText amtEdit = new EditText(getContext());
-                        amtEdit.setHint("Amount");
-                        amtEdit.setInputType(InputType.TYPE_CLASS_NUMBER);
-                        AlertDialog.Builder adAmt = new AlertDialog.Builder(getContext());
-                        adAmt.setTitle("Enter Amount");
-                        adAmt.setView(amtEdit);
-                        adAmt.setNegativeButton("SEND", (dialog2, which2) -> {
+                    showModernAccountSelectionDialog("Select Source Account", from -> {
+                        showModernInputDialog("Enter Amount", "How much to send to " + accNo + "?", "SEND", amtStr -> {
                             try {
-                                int amount = Integer.parseInt(amtEdit.getText().toString());
-                                if (amount <= myBankAccount.get(from[0]).getCash()) {
-                                    myBankAccount.get(from[0]).setCash(myBankAccount.get(from[0]).getCash() - amount);
-                                    updateBankAccount(myBankAccount.get(from[0]));
+                                int amount = Integer.parseInt(amtStr);
+                                if (amount <= myBankAccount.get(from).getCash()) {
+                                    myBankAccount.get(from).setCash(myBankAccount.get(from).getCash() - amount);
+                                    updateBankAccount(myBankAccount.get(from));
                                     
                                     BankAccount recipientAcc = new BankAccount(accNo, recipientCash + amount);
                                     updateBankAccountAnotherUser(recipientAcc, recipientId);
                                     
-                                    setTotalMoney(myBankAccount);
-                                    MyBankAccountAdapter adapter = new MyBankAccountAdapter(myBankAccount, getActivity());
-                                    recyclerViewbankaccount.setAdapter(adapter);
-                                    
-                                    History hs = new History(mainUser.getId(),"Sent ₹" + amount + " to " + accNo, Calendar.getInstance().getTime());
-                                    mainUser.getHistory().push(hs);
-                                    historyToDatabase(hs);
+                                    updateBankAccountList();
+                                    recordHistory("Sent ₹" + amount + " to " + accNo);
                                     Toast.makeText(getApplicationContext(), "Sent Successfully", Toast.LENGTH_SHORT).show();
                                 } else {
                                     Toast.makeText(getApplicationContext(), "Insufficient funds", Toast.LENGTH_SHORT).show();
                                 }
                             } catch (Exception ex) {}
                         });
-                        adAmt.create().show();
                     });
-                    adFrom.create().show();
                 } else {
                     Toast.makeText(getApplicationContext(), "Invalid Account Number", Toast.LENGTH_SHORT).show();
                 }
             });
         });
-        typeAccountNo.create().show();
     }
 
     public ArrayList<History> stackToArrayList(Stack<History> stack){
@@ -575,5 +599,29 @@ public class AccountFragment extends Fragment {
     public void setDate(){
         SimpleDateFormat format = new SimpleDateFormat("EEEE, dd MMMM");
         date.setText(format.format(new Date()));
+    }
+
+    interface ModernInputListener { void onInput(String input); }
+    interface ModernSelectionListener { void onSelected(int position); }
+
+    private class ModernAccountAdapter extends RecyclerView.Adapter<ModernAccountAdapter.Holder> {
+        List<BankAccount> list;
+        ModernSelectionListener listener;
+        ModernAccountAdapter(List<BankAccount> list, ModernSelectionListener listener) { this.list = list; this.listener = listener; }
+        @NonNull @Override public Holder onCreateViewHolder(@NonNull ViewGroup p, int t) {
+            View v = getLayoutInflater().inflate(R.layout.item_modern_selection, p, false);
+            return new Holder(v);
+        }
+        @Override public void onBindViewHolder(@NonNull Holder h, int p) {
+            BankAccount acc = list.get(p);
+            h.t1.setText(acc.getAccountno());
+            h.t2.setText("Balance: ₹" + acc.getCash());
+            h.itemView.setOnClickListener(v -> listener.onSelected(p));
+        }
+        @Override public int getItemCount() { return list.size(); }
+        class Holder extends RecyclerView.ViewHolder {
+            TextView t1, t2;
+            Holder(View v) { super(v); t1 = v.findViewById(R.id.text1); t2 = v.findViewById(R.id.text2); }
+        }
     }
 }
