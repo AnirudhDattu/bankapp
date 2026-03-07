@@ -33,15 +33,15 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Stack;
 
 public class SignIn extends AppCompatActivity {
-    // --- DEBUG AUTO-LOGIN OPTIONS ---
-    private static final boolean DEBUG_AUTO_LOGIN = false; // Set to true to skip login
-    private static final String DEBUG_USER = "001";
-    private static final String DEBUG_PASS = "001";
-    // --------------------------------
+    // --- SPECIAL ACCOUNTS CONFIGURATION ---
+    private static final String ADMIN_ID = "9999";
+    private static final String DEMO_ID = "0000";
+    // --------------------------------------
 
     private EditText userName,userPass;
     public static User mainUser;
@@ -70,12 +70,6 @@ public class SignIn extends AppCompatActivity {
            setContentView(R.layout.activity_sign_in);//load screen
            userName=findViewById(R.id.edittext_id_number_sign_in);
            userPass=findViewById(R.id.edittext_user_password_sign_in);
-
-           if (DEBUG_AUTO_LOGIN) {
-               userName.setText(DEBUG_USER);
-               userPass.setText(DEBUG_PASS);
-               new android.os.Handler().postDelayed(() -> signIn(null), 500);
-           }
     }
     public void signUp(View view){
         Intent signUp=new Intent(SignIn.this, SignUpActivity.class);
@@ -110,6 +104,7 @@ public class SignIn extends AppCompatActivity {
                             }
                         }
                     }
+                    SignIn.mainUser.setUserbills(bills);
                 }
             }
         });
@@ -139,6 +134,7 @@ public class SignIn extends AppCompatActivity {
                             credits.add(tempCredit);
                         }
                     }
+                    SignIn.mainUser.setCredits(credits);
                 }
             }
         });
@@ -292,25 +288,33 @@ public class SignIn extends AppCompatActivity {
             return;
         }
 
+        if (user_name.equals(ADMIN_ID)) {
+            mainUser = new User();
+            mainUser.setName("Admin");
+            mainUser.setId(ADMIN_ID);
+            mainUser.setHistory(new Stack<>());
+            getAllUsers(() -> {
+                Intent intent = new Intent(SignIn.this, AdminPanelActivity.class);
+                startActivity(intent);
+                finish();
+            });
+            return;
+        }
+
+        if (user_name.equals(DEMO_ID)) {
+            setupDemoUser();
+            intent = new Intent(SignIn.this, splashScreen.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         ParseUser.logInInBackground(user_name, user_pass, new LogInCallback() {
             @Override
             public void done(ParseUser user, ParseException e) {
                 if(e !=null){
                     Toast.makeText(getApplicationContext(),e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
                 }else{
-                    if (user_name.equals("admin") && user_pass.equals("admin123")) {
-                        mainUser = new User();
-                        mainUser.setName("Admin");
-                        mainUser.setId("admin");
-                        mainUser.setHistory(new Stack<>());
-                        getAllUsers(() -> {
-                            Intent intent = new Intent(SignIn.this, AdminPanelActivity.class);
-                            startActivity(intent);
-                            finish();
-                        });
-                        return;
-                    }
-
                     ParseQuery<ParseObject> query=ParseQuery.getQuery("UserInfo");
                     query.whereEqualTo("username",user_name);
                     query.findInBackground(new FindCallback<ParseObject>() {
@@ -377,6 +381,34 @@ public class SignIn extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void setupDemoUser() {
+        mainUser = new User("Demo User", DEMO_ID, "9876543210", new Address("Demo St", "Tech Park", 1, 1, 1, "Bangalore", "KA", "India"), new Job("Software Engineer", "1000000", "24", "8.5"));
+        
+        ArrayList<BankAccount> accounts = new ArrayList<>();
+        accounts.add(new BankAccount("DEMO123456", 75000));
+        accounts.add(new BankAccount("SAVING9876", 125000));
+        mainUser.setBankAccounts(accounts);
+
+        ArrayList<CreditCard> cards = new ArrayList<>();
+        cards.add(new CreditCard("4532 1234 5678 9012", 250000));
+        mainUser.setCreditCards(cards);
+
+        Stack<History> historyStack = new Stack<>();
+        Calendar cal = Calendar.getInstance();
+        historyStack.push(new History(DEMO_ID, "Salary Received: ₹150000", cal.getTime()));
+        cal.add(Calendar.DAY_OF_YEAR, -1);
+        historyStack.push(new History(DEMO_ID, "Power Bill Paid: ₹4500", cal.getTime()));
+        cal.add(Calendar.DAY_OF_YEAR, -1);
+        historyStack.push(new History(DEMO_ID, "Sent ₹5000 via UPI Scan", cal.getTime()));
+        cal.add(Calendar.DAY_OF_YEAR, -2);
+        historyStack.push(new History(DEMO_ID, "Credit Loan Paid: ₹25000", cal.getTime()));
+        cal.add(Calendar.DAY_OF_YEAR, -1);
+        historyStack.push(new History(DEMO_ID, "Fuel Station: ₹3200", cal.getTime()));
+        mainUser.setHistory(historyStack);
+        
+        Toast.makeText(this, "Logged in as Demo User", Toast.LENGTH_SHORT).show();
     }
 
     public void adminPanel(View view){
