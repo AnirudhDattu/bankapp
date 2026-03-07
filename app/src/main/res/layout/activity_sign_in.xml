@@ -42,7 +42,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="16dp"
                 android:fontFamily="sans-serif-medium"
-                android:text="Bankify"
+                android:text="IZBANK"
                 android:textColor="@color/apple_text_primary"
                 android:textSize="28sp" />
 

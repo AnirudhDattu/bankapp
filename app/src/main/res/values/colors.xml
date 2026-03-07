@@ -7,6 +7,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="pure_white">#FFFFFFFF</color>
 
     <!-- Apple-style Minimal Palette -->
     <color name="apple_background">#F5F5F7</color>
@@ -15,6 +16,18 @@
     <color name="apple_text_secondary">#86868B</color>
     <color name="apple_blue">#0071E3</color>
     <color name="apple_grey_light">#E8E8ED</color>
+
+    <!-- Dark Mode Colors -->
+    <color name="dark_background">#000000</color>
+    <color name="dark_card">#1C1C1E</color>
+    <color name="dark_text_primary">#FFFFFF</color>
+    <color name="dark_text_secondary">#8E8E93</color>
+    <color name="dark_grey_light">#2C2C2E</color>
+
+    <!-- Premium Card Colors -->
+    <color name="premium_card_bg">#1D1D1F</color>
+    <color name="premium_card_accent">#DAA520</color> <!-- Goldenrod -->
+    <color name="premium_card_text">#FFFFFF</color>
 
     <color name="user">#9575CD</color>
     <color name="user2">#B39DDB</color>

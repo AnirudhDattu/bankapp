@@ -66,9 +66,23 @@ public class MyCreditCardAdapter extends RecyclerView.Adapter<MyCreditCardAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         text_view_total_money = context.findViewById(R.id.text_view_total_money);
-        final CreditCard CreditCard = MyCreditCards.get(position);
-        holder.textCreditCardNo.setText(CreditCard.getCreditCardNo());
-        holder.textCreditCardLimit.setText("₹ "+String.valueOf(CreditCard.getLimit()));
+        final CreditCard creditCard = MyCreditCards.get(position);
+        
+        // Fix alignment: Format card number with spaces every 4 digits
+        String rawNo = creditCard.getCreditCardNo();
+        if (rawNo != null && rawNo.length() == 16) {
+            String formatted = rawNo.substring(0, 4) + " " + rawNo.substring(4, 8) + " " + rawNo.substring(8, 12) + " " + rawNo.substring(12, 16);
+            holder.textCreditCardNo.setText(formatted);
+        } else {
+            holder.textCreditCardNo.setText(rawNo);
+        }
+
+        holder.textCreditCardLimit.setText("₹" + String.valueOf(creditCard.getLimit()));
+        
+        // Show real user name
+        if (SignIn.mainUser != null) {
+            holder.textCardHolderName.setText(SignIn.mainUser.getName().toUpperCase());
+        }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,32 +116,7 @@ public class MyCreditCardAdapter extends RecyclerView.Adapter<MyCreditCardAdapte
                     ad.setSingleChoiceItems(items, checkedItem[0], new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            switch (i) {
-                                case 0:
-                                    checkedItem[0] =i;
-
-
-                                    break;
-                                case 1:
-
-                                    checkedItem[0] =i;
-
-                                    break;
-                                case 2:
-
-                                    checkedItem[0] =i;
-
-                                    break;
-                                case 3:
-
-                                    checkedItem[0] =i;
-
-                                    break;
-                                case 4:
-
-                                    checkedItem[0] =i;
-                                    break;
-                            }
+                            checkedItem[0] = i;
                         }
                     });
                     ad.setNegativeButton("Pay", new DialogInterface.OnClickListener() {
@@ -135,20 +124,24 @@ public class MyCreditCardAdapter extends RecyclerView.Adapter<MyCreditCardAdapte
                         public void onClick(DialogInterface dialogInterface, int i) {
 
                             i= checkedItem[0];
-                            MyCreditCards.get(position).setLimit(MyCreditCards.get(position).getLimit() + Integer.parseInt(editText.getText().toString()));
-                            holder.textCreditCardLimit.setText(String.valueOf(CreditCard.getLimit()));
-                            MyBankAccounts.get(i).setCash(MyBankAccounts.get(i).getCash() -Integer.parseInt(editText.getText().toString()));
-                            updateBankAccount(MyBankAccounts.get(i));
-                            updateCreditCards(MyCreditCards.get(position));
-                            setTotalMoney(MyBankAccounts);
-                            MyBankAccountAdapter myBankAccountAdapter = new MyBankAccountAdapter(MyBankAccounts,context );
-                            recyclerViewbankaccount.setAdapter(myBankAccountAdapter);
-                            History hs = new History(mainUser.getId(),"Credit Card Paid.",getDate() );
-                            mainUser.getHistory().push(hs);
-                            historyToDatabase(hs);
-
-
-
+                            try {
+                                int payAmount = Integer.parseInt(editText.getText().toString());
+                                if (payAmount > 0) {
+                                    MyCreditCards.get(position).setLimit(MyCreditCards.get(position).getLimit() + payAmount);
+                                    holder.textCreditCardLimit.setText("₹" + String.valueOf(creditCard.getLimit()));
+                                    MyBankAccounts.get(i).setCash(MyBankAccounts.get(i).getCash() - payAmount);
+                                    updateBankAccount(MyBankAccounts.get(i));
+                                    updateCreditCards(MyCreditCards.get(position));
+                                    setTotalMoney(MyBankAccounts);
+                                    MyBankAccountAdapter myBankAccountAdapter = new MyBankAccountAdapter(MyBankAccounts,context );
+                                    recyclerViewbankaccount.setAdapter(myBankAccountAdapter);
+                                    History hs = new History(mainUser.getId(),"Credit Card Paid: ₹" + payAmount, getDate() );
+                                    mainUser.getHistory().push(hs);
+                                    historyToDatabase(hs);
+                                }
+                            } catch (NumberFormatException e) {
+                                Toast.makeText(context, "Invalid amount", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     });
                     ad.create().show();
@@ -168,26 +161,22 @@ public class MyCreditCardAdapter extends RecyclerView.Adapter<MyCreditCardAdapte
         for (int i = 0; i<MyBankAccounts.size();i++){
             totalmoney += MyBankAccounts.get(i).getCash();
         }
-        text_view_total_money.setText(Integer.toString(totalmoney));
+        if (text_view_total_money != null) {
+            text_view_total_money.setText(Integer.toString(totalmoney));
+        }
     }
 
     public void accountsToDatabase(BankAccount bankAc){
         ParseObject object=new ParseObject("BankAccount");
         object.put("accountNo",bankAc.getAccountno());
         object.put("userId", SignIn.mainUser.getId());
-
         object.put("cash",String.valueOf(bankAc.getCash()));
-
 
         object.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
                 if(e != null){
                     Toast.makeText(getApplicationContext(),e.getLocalizedMessage().toString(),Toast.LENGTH_LONG).show();
-                }
-                else{
-                    Toast.makeText(getApplicationContext(),"banka datada",Toast.LENGTH_LONG).show();
-
                 }
             }
         });
@@ -197,111 +186,69 @@ public class MyCreditCardAdapter extends RecyclerView.Adapter<MyCreditCardAdapte
         ParseObject object=new ParseObject("CreditCard");
         object.put("creditCardNo",card.getCreditCardNo());
         object.put("userId", SignIn.mainUser.getId());
-
         object.put("limit",String.valueOf(card.getLimit()));
-
 
         object.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
                 if(e != null){
                     Toast.makeText(getApplicationContext(),e.getLocalizedMessage().toString(),Toast.LENGTH_LONG).show();
-                }
-                else{
-                    Toast.makeText(getApplicationContext(),"kart datada",Toast.LENGTH_LONG).show();
-
                 }
             }
         });
     }
 
     public void updateCreditCards(CreditCard card){
-        ParseQuery<ParseObject> queryBankAccount=ParseQuery.getQuery("CreditCard");
-        queryBankAccount.whereEqualTo("creditCardNo", card.getCreditCardNo());
-        queryBankAccount.findInBackground(new FindCallback<ParseObject>() {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("CreditCard");
+        query.whereEqualTo("creditCardNo", card.getCreditCardNo());
+        query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> objects, ParseException e) {
-                if(e!=null){
-                    e.printStackTrace();
-                }else{
-
-                    if(objects.size()>0){
-                        for(ParseObject object:objects){
-                            object.deleteInBackground();
-                            Toast.makeText(getApplicationContext(),"sildi",Toast.LENGTH_LONG).show();
-                            cardsToDatabase(card);
-
-
-
-
-
-                        }
-
-
+                if(e == null && objects != null && objects.size() > 0){
+                    for(ParseObject object : objects){
+                        object.deleteInBackground();
+                        cardsToDatabase(card);
                     }
-
                 }
-
-
             }
         });
     }
 
     public void updateBankAccount(BankAccount bankac){
-        ParseQuery<ParseObject> queryBankAccount=ParseQuery.getQuery("BankAccount");
-        queryBankAccount.whereEqualTo("accountNo", bankac.getAccountno());
-        queryBankAccount.findInBackground(new FindCallback<ParseObject>() {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("BankAccount");
+        query.whereEqualTo("accountNo", bankac.getAccountno());
+        query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> objects, ParseException e) {
-                if(e!=null){
-                    e.printStackTrace();
-                }else{
-
-                    if(objects.size()>0){
-                        for(ParseObject object:objects){
-                            object.deleteInBackground();
-                            Toast.makeText(getApplicationContext(),"sildi",Toast.LENGTH_LONG).show();
-                            accountsToDatabase(bankac);
-
-
-
-
-
-                        }
-
-
+                if(e == null && objects != null && objects.size() > 0){
+                    for(ParseObject object : objects){
+                        object.deleteInBackground();
+                        accountsToDatabase(bankac);
                     }
-
                 }
-
-
             }
         });
     }
 
 
     public class ViewHolder extends RecyclerView.ViewHolder{
-        ImageView imageCreditCard;
         TextView textCreditCardLimit;
         TextView textCreditCardNo;
-        private CardView cardView;
+        TextView textCardHolderName;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            imageCreditCard = itemView.findViewById(R.id.image_view_add_credit_card);
             textCreditCardLimit = itemView.findViewById(R.id.text_view_credit_card_limit);
             textCreditCardNo = itemView.findViewById(R.id.text_view_credit_card_no);
-            cardView = itemView.findViewById(R.id.card_view_credit_card);
-
+            textCardHolderName = itemView.findViewById(R.id.text_view_card_holder_name);
         }
     }
+    
     public void historyToDatabase(History history){
         ParseObject object=new ParseObject("History");
         object.put("process",history.getProcess());
         object.put("userId", mainUser.getId());
-
         object.put("date",history.getDateDate());
-
 
         object.saveInBackground(new SaveCallback() {
             @Override
@@ -309,24 +256,10 @@ public class MyCreditCardAdapter extends RecyclerView.Adapter<MyCreditCardAdapte
                 if(e != null){
                     Toast.makeText(getApplicationContext(),e.getLocalizedMessage().toString(),Toast.LENGTH_LONG).show();
                 }
-                else{
-                    Toast.makeText(getApplicationContext(),"history datada",Toast.LENGTH_LONG).show();
-
-                }
             }
         });
     }
 
-    public ArrayList<History> stackToArrayList(Stack<History> stack){
-        ArrayList<History> arraylistHistory = new ArrayList<>();
-        while (stack.size() !=0){
-            arraylistHistory.add(stack.pop());
-        }
-        for (int i =arraylistHistory.size()-1;i>=0; i-- ) {
-            mainUser.getHistory().push(arraylistHistory.get(i));
-        }
-        return arraylistHistory;
-    }
     public Date getDate(){
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
         Date currentTime = Calendar.getInstance().getTime();

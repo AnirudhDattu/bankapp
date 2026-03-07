@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Map original names to Dark variants -->
+    <color name="apple_background">@color/dark_background</color>
+    <color name="apple_card">@color/dark_card</color>
+    <color name="apple_text_primary">@color/dark_text_primary</color>
+    <color name="apple_text_secondary">@color/dark_text_secondary</color>
+    <color name="apple_grey_light">@color/dark_grey_light</color>
+
+    <!-- This restores the superb dark backgrounds for Material Cards -->
+    <color name="white">@color/dark_card</color>
+</resources>
