@@ -65,6 +65,9 @@ public class MainScreenActivity extends AppCompatActivity {
                 fm.beginTransaction().add(R.id.fragment_container,fragment1,"1").commit();
                 fm.beginTransaction().hide(tempFragment).show(fragment1).commit();
                 tempFragment = fragment1;
+            } else if (itemId == R.id.menu2) {
+                fm.beginTransaction().hide(tempFragment).show(fragment2).commit();
+                tempFragment = fragment2;
             } else if (itemId == R.id.menu4) {
                 fm.beginTransaction().hide(tempFragment).show(fragment4).commit();
                 tempFragment = fragment4;

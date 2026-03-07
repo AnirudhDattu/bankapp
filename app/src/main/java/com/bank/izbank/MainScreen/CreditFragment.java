@@ -6,7 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +28,7 @@ import com.bank.izbank.R;
 import com.bank.izbank.Sign.SignIn;
 import com.bank.izbank.UserInfo.BankAccount;
 import com.bank.izbank.UserInfo.History;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -44,14 +47,11 @@ import static com.parse.Parse.getApplicationContext;
 
 public class CreditFragment extends Fragment {
 
-    private Toolbar toolbarCredit;
     private RecyclerView recyclerViewCredit;
-    private ArrayList<Credit> list,searchList;
+    private ArrayList<Credit> list;
     private CreditAdapter creditAdapter;
-    private FloatingActionButton floatingActionButtonCredit;
-    private Credit credit;
-    private AdapterView.OnItemClickListener mListener;
-
+    private ExtendedFloatingActionButton floatingActionButtonCredit;
+    private TextView textViewDate;
 
 
     @Nullable
@@ -61,319 +61,176 @@ public class CreditFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        floatingActionButtonCredit = getView().findViewById(R.id.floatingActionButton_credit);
+        floatingActionButtonCredit = view.findViewById(R.id.floatingActionButton_credit);
+        textViewDate = view.findViewById(R.id.text_view_date_credit);
+        recyclerViewCredit = view.findViewById(R.id.recyclerView_credit);
 
-        toolbarCredit = getView().findViewById(R.id.toolbar_credit);
-        toolbarCredit.setTitle("Credit Screen");
-        toolbarCredit.setLogo(R.drawable.icon_credit);
-        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbarCredit);
+        setDate();
 
-        setHasOptionsMenu(true);
-        recyclerViewCredit = getView().findViewById(R.id.recyclerView_credit);
         recyclerViewCredit.setHasFixedSize(true);
         recyclerViewCredit.setLayoutManager(new LinearLayoutManager(getContext()));
 
         list = SignIn.mainUser.getCredits();
+        if (list == null) list = new ArrayList<>();
 
-        //creditAdapter = new CreditAdapter(getContext(),list);
         creditAdapter = new CreditAdapter(getContext(),list);
-        creditAdapter.setListener(new CustomEventListener() {
-            @Override
-            public void MyEventListener() {
-
-
-                list= mainUser.getCredits();
-                creditAdapter = new CreditAdapter(getContext(),list);
-                creditAdapter.setListener(new CustomEventListener() {
-                    @Override
-                    public void MyEventListener() {
-
-
-                        list= mainUser.getCredits();
-                        creditAdapter = new CreditAdapter(getContext(),list);
-
-
-                        recyclerViewCredit.setAdapter(creditAdapter);
-                    }
-                });
-
-
-                recyclerViewCredit.setAdapter(creditAdapter);
-            }
+        creditAdapter.setListener(() -> {
+            list = SignIn.mainUser.getCredits();
+            creditAdapter = new CreditAdapter(getContext(),list);
+            recyclerViewCredit.setAdapter(creditAdapter);
         });
 
         recyclerViewCredit.setAdapter(creditAdapter);
 
-        floatingActionButtonCredit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        floatingActionButtonCredit.setOnClickListener(v -> showCreditPopup());
+    }
 
+    private void setDate() {
+        SimpleDateFormat format = new SimpleDateFormat("EEEE, dd MMMM");
+        Date currentTime = Calendar.getInstance().getTime();
+        textViewDate.setText(format.format(currentTime));
+    }
 
-                AlertDialog.Builder creditPopup = new AlertDialog.Builder(getContext());
-                creditPopup.setTitle("Set Credit");
-                LayoutInflater inflater = getActivity().getLayoutInflater();
-                View dialogView= inflater.inflate(R.layout.credit_screen_credit_first_step_popup, null);
-                creditPopup.setView(dialogView);
-                EditText creditAmount = dialogView.findViewById(R.id.editText_credit_amount) ;
-                TextView interestRate = dialogView.findViewById(R.id.textView_credit_interestRate);
-                EditText installment = dialogView.findViewById(R.id.editText_credit_installment);
+    private void showCreditPopup() {
+        if (SignIn.mainUser.getBankAccounts() == null || SignIn.mainUser.getBankAccounts().isEmpty()) {
+            Toast.makeText(getContext(), "You need at least one bank account to receive a loan.", Toast.LENGTH_LONG).show();
+            return;
+        }
 
-                TextView staticMaxAmount = dialogView.findViewById(R.id.textView_static_credit_max_amount);
-                TextView staticMaxInstallment = dialogView.findViewById(R.id.textView_static_credit_max_installment);
+        AlertDialog.Builder creditPopup = new AlertDialog.Builder(getContext());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View dialogView= inflater.inflate(R.layout.credit_screen_credit_first_step_popup, null);
+        creditPopup.setView(dialogView);
+        
+        EditText creditAmount = dialogView.findViewById(R.id.editText_credit_amount) ;
+        TextView interestRate = dialogView.findViewById(R.id.textView_credit_interestRate);
+        EditText installment = dialogView.findViewById(R.id.editText_credit_installment);
 
-                interestRate.setText("Rate: %"+SignIn.mainUser.getJob().getInterestRate());
-                staticMaxAmount.setText(SignIn.mainUser.getJob().getMaxCreditAmount());
-                staticMaxInstallment.setText(SignIn.mainUser.getJob().getMaxCreditInstallment());
+        TextView staticMaxAmount = dialogView.findViewById(R.id.textView_static_credit_max_amount);
+        TextView staticMaxInstallment = dialogView.findViewById(R.id.textView_static_credit_max_installment);
 
+        interestRate.setText("Your Interest Rate: %" + SignIn.mainUser.getJob().getInterestRate());
+        staticMaxAmount.setText("₹" + SignIn.mainUser.getJob().getMaxCreditAmount());
+        staticMaxInstallment.setText(SignIn.mainUser.getJob().getMaxCreditInstallment());
 
+        creditPopup.setPositiveButton("Calculate", (dialog, which) -> {
+            String amountStr = creditAmount.getText().toString();
+            String installmentStr = installment.getText().toString();
 
-                creditPopup.setNegativeButton("Set", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+            if (!amountStr.isEmpty() && !installmentStr.isEmpty()) {
+                try {
+                    int maxAmount = Integer.parseInt(SignIn.mainUser.getJob().getMaxCreditAmount());
+                    int maxInstallment = Integer.parseInt(SignIn.mainUser.getJob().getMaxCreditInstallment());
+                    int currentAmount = Integer.parseInt(amountStr);
+                    int currentInstallment = Integer.parseInt(installmentStr);
 
-                       if(!(creditAmount.getText().toString().matches("") || installment.getText().toString().matches(""))){
-
-
-
-                           int maxAmount = Integer.parseInt(SignIn.mainUser.getJob().getMaxCreditAmount());
-                           int maxInstallment = Integer.parseInt(SignIn.mainUser.getJob().getMaxCreditInstallment());
-                           int currentAmount = Integer.parseInt(creditAmount.getText().toString());
-                           int currentInstallment = Integer.parseInt(installment.getText().toString());
-
-                           if(maxAmount>=currentAmount && maxInstallment>=currentInstallment){
-
-                               AlertDialog.Builder creditPopupSecond = new AlertDialog.Builder(getContext());
-                               creditPopupSecond.setTitle("Check Credit");
-                               LayoutInflater inflaterSecond = getActivity().getLayoutInflater();
-                               View dialogViewSecond= inflaterSecond.inflate(R.layout.credit_screen_credit_second_step_popup, null);
-                               creditPopupSecond.setView(dialogViewSecond);
-
-                               TextView amountSecond = dialogViewSecond.findViewById(R.id.textView_taken_amount);
-                               TextView payAmountSecond = dialogViewSecond.findViewById(R.id.textView_pay_amount);
-
-                               amountSecond.setText(String.valueOf(currentAmount));
-                               payAmountSecond.setText(String.valueOf(currentAmount + ((currentAmount/Integer.parseInt(SignIn.mainUser.getJob().getInterestRate()))*currentInstallment)/1200));
-
-                               creditPopupSecond.setNegativeButton("Confirm", new DialogInterface.OnClickListener() {
-                                   @Override
-                                   public void onClick(DialogInterface dialogInterface, int i) {
-
-                                       // database vesaire
-
-
-                                       int payCurrentAmount = currentAmount + ((currentAmount*Integer.parseInt(SignIn.mainUser.getJob().getInterestRate()))*currentInstallment)/1200;
-
-                                       Credit tempCredit = new Credit(currentAmount,currentInstallment,Integer.parseInt(SignIn.mainUser.getJob().getInterestRate()),payCurrentAmount);
-
-
-                                       receiveCredit(tempCredit);
-
-
-
-                                   }
-                               });
-
-                               creditPopupSecond.create().show();
-
-                           }
-                           else {
-                               Toast.makeText(getContext(), "Type proper values!", Toast.LENGTH_SHORT).show();
-                           }
-
-
-
-                       }
-                       else {
-
-                           Toast.makeText(getContext(), "Type proper values!", Toast.LENGTH_SHORT).show();
-
-                       }
-
-
-
+                    if (currentAmount > 0 && currentAmount <= maxAmount && currentInstallment > 0 && currentInstallment <= maxInstallment) {
+                        showConfirmPopup(currentAmount, currentInstallment);
+                    } else {
+                        Toast.makeText(getContext(), "Please enter valid values within limits!", Toast.LENGTH_SHORT).show();
                     }
-                });
-
-
-
-
-
-                creditPopup.create().show();
+                } catch (NumberFormatException e) {
+                    Toast.makeText(getContext(), "Invalid input format.", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(getContext(), "Fields cannot be empty!", Toast.LENGTH_SHORT).show();
             }
         });
-
-
-
+        
+        creditPopup.setNegativeButton("Cancel", null);
+        creditPopup.create().show();
     }
-    public void updateBankAccount(BankAccount bankac){
+
+    private void showConfirmPopup(int currentAmount, int currentInstallment) {
+        AlertDialog.Builder creditPopupSecond = new AlertDialog.Builder(getContext());
+        LayoutInflater inflaterSecond = getActivity().getLayoutInflater();
+        View dialogViewSecond = inflaterSecond.inflate(R.layout.credit_screen_credit_second_step_popup, null);
+        creditPopupSecond.setView(dialogViewSecond);
+
+        TextView amountSecond = dialogViewSecond.findViewById(R.id.textView_taken_amount);
+        TextView payAmountSecond = dialogViewSecond.findViewById(R.id.textView_pay_amount);
+        TextView monthlyInstallmentSecond = dialogViewSecond.findViewById(R.id.textView_monthly_installment);
+        Spinner spinnerAccounts = dialogViewSecond.findViewById(R.id.spinner_accounts);
+
+        int interest = Integer.parseInt(SignIn.mainUser.getJob().getInterestRate());
+        // Simple Interest Math: Total = Principal + (Principal * Rate * Time / 1200)
+        int payTotal = currentAmount + ((currentAmount * interest) * currentInstallment) / 1200;
+        int monthly = payTotal / currentInstallment;
+
+        amountSecond.setText("₹" + currentAmount);
+        payAmountSecond.setText("₹" + payTotal);
+        monthlyInstallmentSecond.setText("₹" + monthly + "/mo");
+
+        // Populate Spinner with Bank Accounts
+        ArrayList<String> accountNumbers = new ArrayList<>();
+        for (BankAccount acc : SignIn.mainUser.getBankAccounts()) {
+            accountNumbers.add(acc.getAccountno() + " (Balance: ₹" + acc.getCash() + ")");
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, accountNumbers);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerAccounts.setAdapter(adapter);
+
+        creditPopupSecond.setPositiveButton("Confirm & Receive", (dialog, which) -> {
+            int selectedIndex = spinnerAccounts.getSelectedItemPosition();
+            Credit tempCredit = new Credit(currentAmount, currentInstallment, interest, payTotal);
+            receiveCredit(tempCredit, selectedIndex);
+        });
+        
+        creditPopupSecond.setNegativeButton("Back", (dialog, which) -> showCreditPopup());
+        creditPopupSecond.create().show();
+    }
+
+    public void receiveCredit(Credit tempCredit, int accountIndex){
+        if(accountIndex >= 0 && accountIndex < SignIn.mainUser.getBankAccounts().size()){
+            BankAccount selectedAccount = SignIn.mainUser.getBankAccounts().get(accountIndex);
+            selectedAccount.setCash(selectedAccount.getCash() + tempCredit.getAmount());
+            updateBankAccount(selectedAccount);
+
+            Toast.makeText(getContext(), "₹" + tempCredit.getAmount() + " deposited to account " + selectedAccount.getAccountno(), Toast.LENGTH_LONG).show();
+
+            creditToDatabase(tempCredit);
+            list.add(tempCredit);
+            creditAdapter.notifyDataSetChanged();
+
+            History hs = new History(mainUser.getId(),"Credit Received: ₹" + tempCredit.getAmount() + " to " + selectedAccount.getAccountno(), Calendar.getInstance().getTime());
+            mainUser.getHistory().push(hs);
+            historyToDatabase(hs);
+        } else {
+            Toast.makeText(getContext(), "Error: Invalid account selection.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void updateBankAccount(BankAccount bankac){
         ParseQuery<ParseObject> queryBankAccount=ParseQuery.getQuery("BankAccount");
         queryBankAccount.whereEqualTo("accountNo", bankac.getAccountno());
-        queryBankAccount.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> objects, ParseException e) {
-                if(e!=null){
-                    e.printStackTrace();
-                }else{
-
-                    if(objects.size()>0){
-                        for(ParseObject object:objects){
-                            object.deleteInBackground();
-
-                            accountsToDatabase(bankac);
-                        }
-                    }
+        queryBankAccount.findInBackground((objects, e) -> {
+            if(e == null && objects.size() > 0){
+                for(ParseObject object : objects){
+                    object.put("cash", String.valueOf(bankac.getCash()));
+                    object.saveInBackground();
                 }
             }
         });
     }
 
-    public void accountsToDatabase(BankAccount bankAc){
-        ParseObject object=new ParseObject("BankAccount");
-        object.put("accountNo",bankAc.getAccountno());
-        object.put("userId", SignIn.mainUser.getId());
-
-        object.put("cash",String.valueOf(bankAc.getCash()));
-
-
-        object.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(ParseException e) {
-                if(e != null){
-                    //Toast.makeText(getApplicationContext(),e.getLocalizedMessage().toString(),Toast.LENGTH_LONG).show();
-                }
-                else{
-
-
-                }
-            }
-        });
-    }
-
-    public void creditToDatabase(Credit tempCredit){
+    private void creditToDatabase(Credit tempCredit){
         ParseObject object=new ParseObject("Credit");
         object.put("amount",String.valueOf(tempCredit.getAmount()));
         object.put("username", SignIn.mainUser.getId());
         object.put("installment",String.valueOf(tempCredit.getInstallment()));
         object.put("interestRate",String.valueOf(tempCredit.getInterestRate()));
         object.put("payAmount",String.valueOf(tempCredit.getPayAmount()));
-
-        object.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(ParseException e) {
-                if(e != null){
-                    //Toast.makeText(getApplicationContext(),e.getLocalizedMessage().toString(),Toast.LENGTH_LONG).show();
-                }
-                else{
-
-
-                }
-            }
-        });
-    }
-    public java.util.Date getDateRealTime(){
-        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-        Date currentTime = Calendar.getInstance().getTime();
-        return currentTime;
+        object.saveInBackground();
     }
 
-    public void historyToDatabase(History history){
+    private void historyToDatabase(History history){
         ParseObject object=new ParseObject("History");
         object.put("process",history.getProcess());
         object.put("userId", mainUser.getId());
-
         object.put("date",history.getDateDate());
-
-
-        object.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(ParseException e) {
-                if(e != null){
-                    Toast.makeText(getApplicationContext(),e.getLocalizedMessage().toString(),Toast.LENGTH_LONG).show();
-                }
-                else{
-
-
-                }
-            }
-        });
+        object.saveInBackground();
     }
-
-    public void receiveCredit(Credit tempCredit){
-
-        int max=Integer.MIN_VALUE;
-        int index=-1;
-
-        for(int i =0;i<SignIn.mainUser.getBankAccounts().size();i++){
-
-            if(SignIn.mainUser.getBankAccounts().get(i).getCash()>max){
-                max=SignIn.mainUser.getBankAccounts().get(i).getCash();
-                index=i;
-            }
-
-        }
-
-        if(SignIn.mainUser.getBankAccounts().size()>0 ){
-
-            SignIn.mainUser.getBankAccounts().get(index).setCash(SignIn.mainUser.getBankAccounts().get(index).getCash()+tempCredit.getAmount());
-
-            updateBankAccount(SignIn.mainUser.getBankAccounts().get(index));
-
-            Toast.makeText(getApplicationContext(),"Credit Received!",Toast.LENGTH_LONG).show();
-
-            creditToDatabase(tempCredit);
-            list.add(tempCredit);
-            creditAdapter = new CreditAdapter(getContext(),list);
-            creditAdapter.setListener(new CustomEventListener() {
-                @Override
-                public void MyEventListener() {
-
-
-                    list= mainUser.getCredits();
-                    creditAdapter = new CreditAdapter(getContext(),list);
-                    creditAdapter.setListener(new CustomEventListener() {
-                        @Override
-                        public void MyEventListener() {
-
-
-                            list= mainUser.getCredits();
-                            creditAdapter = new CreditAdapter(getContext(),list);
-
-
-                            recyclerViewCredit.setAdapter(creditAdapter);
-                        }
-                    });
-
-
-                    recyclerViewCredit.setAdapter(creditAdapter);
-                }
-            });
-
-
-            recyclerViewCredit.setAdapter(creditAdapter);
-            History hs = new History(mainUser.getId(),"Credit Received.(" + tempCredit.getAmount()+")",getDateRealTime() );
-            mainUser.getHistory().push(hs);
-            historyToDatabase(hs);
-
-        }
-        else {
-
-            Toast.makeText(getApplicationContext(),"Don't Have Bank Account!",Toast.LENGTH_LONG).show();
-
-
-        }
-
-
-    }
-
-
-
-
 }

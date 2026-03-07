@@ -68,51 +68,84 @@
             android:orientation="vertical"
             android:paddingBottom="24dp">
 
-            <!-- Admin Actions Row - Smaller and Cleaner -->
+            <!-- Admin Actions Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:orientation="horizontal"
                 android:paddingStart="24dp"
                 android:paddingEnd="24dp">
 
-                <com.google.android.material.button.MaterialButton
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/linear_layout_history"
-                    style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
                     android:layout_width="0dp"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
-                    android:text="History"
-                    android:textAllCaps="false"
-                    android:textColor="@color/apple_text_primary"
-                    android:fontFamily="sans-serif-medium"
-                    app:icon="@drawable/ic_history_apple"
-                    app:iconTint="@color/apple_blue"
-                    app:backgroundTint="@color/white"
-                    app:cornerRadius="12dp"
-                    app:strokeColor="@color/apple_grey_light"
-                    app:strokeWidth="1dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/linear_layout_log_out"
-                    style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:text="Logout"
-                    android:textAllCaps="false"
-                    android:textColor="@color/profilePrimaryDark"
-                    android:fontFamily="sans-serif-medium"
-                    app:icon="@drawable/icon_logout"
-                    app:iconTint="@color/profilePrimaryDark"
-                    app:backgroundTint="@color/white"
-                    app:cornerRadius="12dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
                     app:strokeColor="@color/apple_grey_light"
                     app:strokeWidth="1dp"
-                    android:onClick="logOut" />
+                    android:clickable="true"
+                    android:focusable="true">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_history_apple"
+                            app:tint="@color/apple_blue" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="History"
+                            android:textColor="@color/apple_text_primary"
+                            android:textSize="13sp"
+                            android:fontFamily="sans-serif-medium" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/linear_layout_log_out"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/apple_grey_light"
+                    app:strokeWidth="1dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:onClick="logOut">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/icon_logout"
+                            app:tint="@color/profilePrimaryDark" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Logout"
+                            android:textColor="@color/profilePrimaryDark"
+                            android:textSize="13sp"
+                            android:fontFamily="sans-serif-medium" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
             <TextView

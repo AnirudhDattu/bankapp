@@ -16,6 +16,7 @@ import com.bank.izbank.Bill.Date;
 import com.bank.izbank.Credit.Credit;
 import com.bank.izbank.Job.Job;
 import com.bank.izbank.MainScreen.AdminPanelActivity;
+import com.bank.izbank.MainScreen.MainScreenActivity;
 import com.bank.izbank.R;
 import com.bank.izbank.UserInfo.Address;
 import com.bank.izbank.UserInfo.BankAccount;
@@ -36,6 +37,12 @@ import java.util.List;
 import java.util.Stack;
 
 public class SignIn extends AppCompatActivity {
+    // --- DEBUG AUTO-LOGIN OPTIONS ---
+    private static final boolean DEBUG_AUTO_LOGIN = true; // Set to true to skip login
+    private static final String DEBUG_USER = "001";
+    private static final String DEBUG_PASS = "001";
+    // --------------------------------
+
     private EditText userName,userPass;
     public static User mainUser;
     public static ArrayList<User> allUsers = new ArrayList<>();
@@ -63,6 +70,12 @@ public class SignIn extends AppCompatActivity {
            setContentView(R.layout.activity_sign_in);//load screen
            userName=findViewById(R.id.edittext_id_number_sign_in);
            userPass=findViewById(R.id.edittext_user_password_sign_in);
+
+           if (DEBUG_AUTO_LOGIN) {
+               userName.setText(DEBUG_USER);
+               userPass.setText(DEBUG_PASS);
+               new android.os.Handler().postDelayed(() -> signIn(null), 500);
+           }
     }
     public void signUp(View view){
         Intent signUp=new Intent(SignIn.this, SignUpActivity.class);
@@ -72,6 +85,7 @@ public class SignIn extends AppCompatActivity {
 
 
     public void getUserBills(){
+        if (SignIn.mainUser == null) return;
         ParseQuery<ParseObject> queryBill=ParseQuery.getQuery("Bill");
         queryBill.whereEqualTo("username",SignIn.mainUser.getId());
         queryBill.findInBackground(new FindCallback<ParseObject>() {
@@ -81,7 +95,7 @@ public class SignIn extends AppCompatActivity {
                     e.printStackTrace();
                 }else{
                     bills = new ArrayList<>();
-                    if(objects.size()>0){
+                    if(objects != null && objects.size()>0){
                         for(ParseObject object:objects){
 
                             billType=object.getString("type");
@@ -102,6 +116,7 @@ public class SignIn extends AppCompatActivity {
     }
 
     public void getUserCredits(){
+        if (SignIn.mainUser == null) return;
         ParseQuery<ParseObject> queryCredit=ParseQuery.getQuery("Credit");
         queryCredit.whereEqualTo("username",SignIn.mainUser.getId());
         queryCredit.findInBackground(new FindCallback<ParseObject>() {
@@ -111,7 +126,7 @@ public class SignIn extends AppCompatActivity {
                     e.printStackTrace();
                 }else{
                     credits = new ArrayList<>();
-                    if(objects.size()>0){
+                    if(objects != null && objects.size()>0){
                         for(ParseObject object:objects){
 
                             creditAmount=object.getString("amount");
@@ -130,6 +145,7 @@ public class SignIn extends AppCompatActivity {
     }
 
     public void getBankAccounts(User user){
+        if (user == null) return;
         ParseQuery<ParseObject> queryBankAccount=ParseQuery.getQuery("BankAccount");
         queryBankAccount.whereEqualTo("userId",user.getId());
         queryBankAccount.findInBackground(new FindCallback<ParseObject>() {
@@ -139,7 +155,7 @@ public class SignIn extends AppCompatActivity {
                     e.printStackTrace();
                 }else{
                     ArrayList<BankAccount> accounts = new ArrayList<>();
-                    if(objects.size()>0){
+                    if(objects != null && objects.size()>0){
                         for(ParseObject object:objects){
 
                             String cash=object.getString("cash");
@@ -157,6 +173,7 @@ public class SignIn extends AppCompatActivity {
     }
 
     public void getCreditCards(User user){
+        if (user == null) return;
         ParseQuery<ParseObject> queryCreditCard=ParseQuery.getQuery("CreditCard");
         queryCreditCard.whereEqualTo("userId",user.getId());
         queryCreditCard.findInBackground(new FindCallback<ParseObject>() {
@@ -166,7 +183,7 @@ public class SignIn extends AppCompatActivity {
                     e.printStackTrace();
                 }else{
                     ArrayList<CreditCard> cards = new ArrayList<>();
-                    if(objects.size()>0){
+                    if(objects != null && objects.size()>0){
                         for(ParseObject object:objects){
 
                             String cardNo=object.getString("creditCardNo");
@@ -184,6 +201,7 @@ public class SignIn extends AppCompatActivity {
     }
 
     public void getHistory(){
+        if (SignIn.mainUser == null) return;
         ParseQuery<ParseObject> queryHistory=ParseQuery.getQuery("History");
         queryHistory.whereEqualTo("userId",SignIn.mainUser.getId());
         queryHistory.findInBackground(new FindCallback<ParseObject>() {
@@ -193,7 +211,7 @@ public class SignIn extends AppCompatActivity {
                     e.printStackTrace();
                 }else{
                     Stack<History> historyStack = new Stack<>();
-                    if(objects.size()>0){
+                    if(objects != null && objects.size()>0){
                         for(ParseObject object:objects){
 
                             String historyProcess=object.getString("process");
@@ -266,15 +284,21 @@ public class SignIn extends AppCompatActivity {
     }
 
     public void signIn(View view){
-        //loading screen
+        String user_name = userName.getText().toString();
+        String user_pass = userPass.getText().toString();
 
-        ParseUser.logInInBackground(userName.getText().toString(), userPass.getText().toString(), new LogInCallback() {
+        if (user_name.isEmpty() || user_pass.isEmpty()) {
+            Toast.makeText(this, "Please enter ID and Password", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ParseUser.logInInBackground(user_name, user_pass, new LogInCallback() {
             @Override
             public void done(ParseUser user, ParseException e) {
                 if(e !=null){
                     Toast.makeText(getApplicationContext(),e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
                 }else{
-                    if (userName.getText().toString().equals("admin") && userPass.getText().toString().equals("admin123")) {
+                    if (user_name.equals("admin") && user_pass.equals("admin123")) {
                         mainUser = new User();
                         mainUser.setName("Admin");
                         mainUser.setId("admin");
@@ -288,7 +312,7 @@ public class SignIn extends AppCompatActivity {
                     }
 
                     ParseQuery<ParseObject> query=ParseQuery.getQuery("UserInfo");
-                    query.whereEqualTo("username",userName.getText().toString());
+                    query.whereEqualTo("username",user_name);
                     query.findInBackground(new FindCallback<ParseObject>() {
                         @Override
                         public void done(List<ParseObject> objects, ParseException e) {
@@ -303,8 +327,14 @@ public class SignIn extends AppCompatActivity {
                                         String phone=object.getString("phone");
                                         String userId=object.getString("username");
                                         String address_string= object.getString("address");
+                                        if (address_string == null) address_string = "";
                                         String[] str = address_string.split(" ");
-                                        Address address = new Address(str[0],str[1],Integer.parseInt(str[2]),Integer.parseInt(str[3]),Integer.parseInt(str[4]),str[5],str[6],str[7]);
+                                        Address address;
+                                        if (str.length >= 8) {
+                                            address = new Address(str[0],str[1],Integer.parseInt(str[2]),Integer.parseInt(str[3]),Integer.parseInt(str[4]),str[5],str[6],str[7]);
+                                        } else {
+                                            address = new Address("", "", 0, 0, 0, "", "", "");
+                                        }
                                         String jobName = object.getString("job");
                                         String maxCreditAmount = object.getString("maxCreditAmount");
                                         String maxCreditInstallment = object.getString("maxCreditInstallment");
@@ -333,10 +363,9 @@ public class SignIn extends AppCompatActivity {
                                         getUserBills();
                                         getUserCredits();
 
-                                        // Start splashScreen AFTER initializing data
                                         intent = new Intent(SignIn.this, splashScreen.class);
                                         startActivity(intent);
-                                        finish(); // Finish SignIn activity so user can't go back to it
+                                        finish();
                                     }
                                 } else {
                                     Toast.makeText(getApplicationContext(), "User info not found", Toast.LENGTH_LONG).show();

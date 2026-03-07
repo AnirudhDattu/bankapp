@@ -47,7 +47,7 @@ import static com.bank.izbank.Sign.SignIn.mainUser;
 
 public class AdminPanelActivity extends AppCompatActivity {
 
-    private MaterialButton linear_layout_history, linear_layout_log_out;
+    private MaterialCardView linear_layout_history, linear_layout_log_out;
     RecyclerView recyclerViewHistory;
     private HistoryAdapter historyAdapter;
     private UserAdapter userAdapter;

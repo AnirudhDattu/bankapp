@@ -1,111 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-    <LinearLayout
-        android:layout_width="250dp"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:weightSum="2"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp">
+        android:text="Loan Summary"
+        android:textColor="@color/apple_text_primary"
+        android:textSize="20sp"
+        android:fontFamily="sans-serif-black"
+        android:layout_marginBottom="16dp"/>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/apple_background"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/apple_grey_light"
+        app:strokeWidth="1dp"
+        android:layout_marginBottom="24dp">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:orientation="horizontal"
-            android:layout_weight="1"
-            android:weightSum="15">
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            </LinearLayout>
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:hint="Taken Amount:"
-                android:gravity="center"
-                android:textStyle="bold">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Principal Amount"
+                    android:textColor="@color/apple_text_secondary"
+                    android:textSize="13sp" />
+                <TextView
+                    android:id="@+id/textView_taken_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:text="₹0"
+                    android:textColor="@color/apple_text_primary"
+                    android:fontFamily="sans-serif-bold"
+                    android:textSize="13sp" />
+            </RelativeLayout>
 
-            </TextView>
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Monthly Installment"
+                    android:textColor="@color/apple_text_secondary"
+                    android:textSize="13sp" />
+                <TextView
+                    android:id="@+id/textView_monthly_installment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:text="₹0/mo"
+                    android:textColor="@color/apple_blue"
+                    android:fontFamily="sans-serif-bold"
+                    android:textSize="13sp" />
+            </RelativeLayout>
 
-            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:background="@color/apple_grey_light" />
 
-            <TextView
-                android:id="@+id/textView_taken_amount"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="8"
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Total Repayment"
+                    android:textColor="@color/apple_text_primary"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-black"/>
+                <TextView
+                    android:id="@+id/textView_pay_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:text="₹0"
+                    android:textColor="@color/apple_text_primary"
+                    android:fontFamily="sans-serif-black"
+                    android:textSize="16sp" />
+            </RelativeLayout>
 
-
-                android:textStyle="bold"
-                >
-
-            </TextView>
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
-
-            </LinearLayout>
         </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:orientation="horizontal"
-            android:layout_weight="1"
-            android:weightSum="15">
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Deposit To"
+        android:textColor="@color/apple_text_secondary"
+        android:textSize="12sp"
+        android:textAllCaps="true"
+        android:fontFamily="sans-serif-bold"
+        android:layout_marginBottom="8dp"/>
 
-            </LinearLayout>
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:hint="Pay Amount:"
-                android:gravity="center"
-                android:textStyle="bold">
+    <Spinner
+        android:id="@+id/spinner_accounts"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@drawable/edittext_border"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp" />
 
-            </TextView>
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="* By clicking confirm, you agree to the terms and conditions of IZBank loan policy."
+        android:textColor="@color/apple_text_secondary"
+        android:textSize="11sp"
+        android:fontFamily="sans-serif-italic"/>
 
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/textView_pay_amount"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="8"
-
-                android:textStyle="bold">
-
-            </TextView>
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
-
-            </LinearLayout>
-        </LinearLayout>
-    </LinearLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
