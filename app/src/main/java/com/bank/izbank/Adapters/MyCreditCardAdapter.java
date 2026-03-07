@@ -42,7 +42,6 @@ public class MyCreditCardAdapter extends RecyclerView.Adapter<MyCreditCardAdapte
     ArrayList<CreditCard> MyCreditCards;
     Activity context;
     RecyclerView recyclerViewbankaccount;
-    TextView text_view_total_money;
 
     public MyCreditCardAdapter(ArrayList<CreditCard> myCreditCardData,Activity activity,ArrayList<BankAccount> MyBankAccounts,RecyclerView recyclerViewbankaccount) {
         this.MyCreditCards = myCreditCardData;
@@ -65,7 +64,6 @@ public class MyCreditCardAdapter extends RecyclerView.Adapter<MyCreditCardAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        text_view_total_money = context.findViewById(R.id.text_view_total_money);
         final CreditCard creditCard = MyCreditCards.get(position);
         
         // Fix alignment: Format card number with spaces every 4 digits
@@ -157,13 +155,7 @@ public class MyCreditCardAdapter extends RecyclerView.Adapter<MyCreditCardAdapte
         return MyCreditCards.size();
     }
     public void setTotalMoney(ArrayList<BankAccount> MyBankAccounts){
-        int totalmoney = 0;
-        for (int i = 0; i<MyBankAccounts.size();i++){
-            totalmoney += MyBankAccounts.get(i).getCash();
-        }
-        if (text_view_total_money != null) {
-            text_view_total_money.setText(Integer.toString(totalmoney));
-        }
+        // Total money UI update is handled by AccountFragment's setupCarousel()
     }
 
     public void accountsToDatabase(BankAccount bankAc){

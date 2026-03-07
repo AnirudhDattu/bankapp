@@ -18,6 +18,7 @@ import com.bank.izbank.Credit.CustomEventListener;
 import com.bank.izbank.R;
 import com.bank.izbank.Sign.SignIn;
 import com.bank.izbank.UserInfo.BankAccount;
+import com.bank.izbank.UserInfo.History;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -25,6 +26,7 @@ import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import static com.bank.izbank.Sign.SignIn.mainUser;
@@ -142,6 +144,12 @@ public class CreditAdapter extends RecyclerView.Adapter<CreditAdapter.CardViewOb
 
 
             deleteCreditFromDatabase(tempCredit);
+            
+            // Add to history so it shows up in Spend Analysis
+            History hs = new History(mainUser.getId(), "Credit Loan Paid: ₹" + tempCredit.getPayAmount(), Calendar.getInstance().getTime());
+            mainUser.getHistory().push(hs);
+            historyToDatabase(hs);
+
             list.remove(position);
 
             mainUser.setCredits(new ArrayList<Credit>(list));
@@ -235,6 +243,18 @@ public class CreditAdapter extends RecyclerView.Adapter<CreditAdapter.CardViewOb
 
 
                 }
+            }
+        });
+    }
+
+    public void historyToDatabase(History history){
+        ParseObject object=new ParseObject("History");
+        object.put("process",history.getProcess());
+        object.put("userId", mainUser.getId());
+        object.put("date",history.getDateDate());
+        object.saveInBackground(e -> {
+            if(e != null){
+                // Error handling
             }
         });
     }

@@ -69,147 +69,29 @@
             android:orientation="vertical"
             android:paddingBottom="24dp">
 
-            <!-- Total Balance Card -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- Total Balance & Analysis Carousel -->
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/viewPager_analysis"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="320dp"
                 android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/apple_grey_light"
-                app:strokeWidth="1dp">
+                android:layout_marginEnd="24dp" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="24dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Total Balance"
-                        android:textColor="@color/apple_text_secondary"
-                        android:textSize="14sp"
-                        android:fontFamily="sans-serif-medium" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="bottom"
-                        android:layout_marginTop="4dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="₹"
-                            android:textColor="@color/apple_text_primary"
-                            android:textSize="20sp"
-                            android:layout_marginBottom="4dp"
-                            android:fontFamily="sans-serif-medium"/>
-
-                        <TextView
-                            android:id="@+id/text_view_total_money"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="4dp"
-                            android:fontFamily="sans-serif-black"
-                            android:text="12,340.00"
-                            android:textColor="@color/apple_text_primary"
-                            android:textSize="36sp" />
-                    </LinearLayout>
-
-                    <com.github.mikephil.charting.charts.LineChart
-                        android:id="@+id/balance_chart"
-                        android:layout_width="match_parent"
-                        android:layout_height="120dp"
-                        android:layout_marginTop="16dp" />
-
-                    <!-- Spend Analysis Summary -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="16dp"
-                        android:weightSum="3">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Income"
-                                android:textColor="@color/apple_text_secondary"
-                                android:textSize="10sp"
-                                android:fontFamily="sans-serif-bold"
-                                android:textAllCaps="true"/>
-                            <TextView
-                                android:id="@+id/text_income_total"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="₹0"
-                                android:textColor="#2ECC71"
-                                android:textSize="14sp"
-                                android:fontFamily="sans-serif-black"/>
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:gravity="center">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Expenses"
-                                android:textColor="@color/apple_text_secondary"
-                                android:textSize="10sp"
-                                android:fontFamily="sans-serif-bold"
-                                android:textAllCaps="true"/>
-                            <TextView
-                                android:id="@+id/text_expense_total"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="₹0"
-                                android:textColor="#E74C3C"
-                                android:textSize="14sp"
-                                android:fontFamily="sans-serif-black"/>
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:gravity="end">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Loans"
-                                android:textColor="@color/apple_text_secondary"
-                                android:textSize="10sp"
-                                android:fontFamily="sans-serif-bold"
-                                android:textAllCaps="true"/>
-                            <TextView
-                                android:id="@+id/text_loan_total"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="₹0"
-                                android:textColor="@color/apple_blue"
-                                android:textSize="14sp"
-                                android:fontFamily="sans-serif-black"/>
-                        </LinearLayout>
-                    </LinearLayout>
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tabLayout_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="12dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="12dp"
+                android:minHeight="0dp"
+                app:tabBackground="@drawable/tab_selector"
+                app:tabGravity="center"
+                app:tabIndicatorHeight="0dp"
+                app:tabMaxWidth="12dp"
+                app:tabMinWidth="12dp"
+                app:tabPaddingStart="4dp"
+                app:tabPaddingEnd="4dp"
+                app:tabRippleColor="@null" />
 
             <!-- Quick Actions -->
             <LinearLayout

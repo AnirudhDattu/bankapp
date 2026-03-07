@@ -39,17 +39,28 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-medium"
-                android:text="TR50 2525 0202 2525 2525"
+                android:text="Account No"
                 android:textColor="@color/apple_text_secondary"
                 android:textSize="12sp" />
 
             <TextView
+                android:id="@+id/text_view_bank_account_type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Savings Account"
                 android:textColor="@color/apple_text_primary"
                 android:textSize="14sp"
                 android:fontFamily="sans-serif-medium"/>
+
+            <TextView
+                android:id="@+id/text_view_upi_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="mobile@izbank"
+                android:textColor="@color/apple_blue"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-bold"/>
 
         </LinearLayout>
 
@@ -58,7 +69,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-black"
-            android:text="₹1023.25"
+            android:text="₹0.00"
             android:textColor="@color/apple_text_primary"
             android:textSize="18sp" />
 

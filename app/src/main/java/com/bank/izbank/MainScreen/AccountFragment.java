@@ -18,7 +18,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
+import com.bank.izbank.Adapters.AnalysisCarouselAdapter;
 import com.bank.izbank.Adapters.HistoryAdapter;
 import com.bank.izbank.Adapters.MyBankAccountAdapter;
 import com.bank.izbank.Adapters.MyCreditCardAdapter;
@@ -27,11 +29,11 @@ import com.bank.izbank.UserInfo.BankAccount;
 import com.bank.izbank.UserInfo.CreditCard;
 import com.bank.izbank.Sign.SignIn;
 import com.bank.izbank.UserInfo.History;
-import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.data.PieEntry;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -55,15 +57,17 @@ public class AccountFragment extends Fragment {
     ImageView add_bank_account, add_credit_card;
     RecyclerView recyclerView;
     RecyclerView recyclerViewbankaccount, recyclerViewHistory;
-    TextView text_view_name, date,text_view_total_money;
-    TextView textIncomeTotal, textExpenseTotal, textLoanTotal;
+    TextView text_view_name, date;
     ArrayList<CreditCard> myCreditCard;
     ArrayList<BankAccount> myBankAccount;
     BankAccount sendUser = null;
     String bankAccountAnother = null;
     String anotherUserid;
     private HistoryAdapter historyAdapter;
-    private LineChart balanceChart;
+    
+    private ViewPager2 viewPagerAnalysis;
+    private TabLayout tabLayoutIndicator;
+    private AnalysisCarouselAdapter carouselAdapter;
 
     @Nullable
     @Override
@@ -81,8 +85,7 @@ public class AccountFragment extends Fragment {
         setDate();
         click();
         setTotalMoney(myBankAccount);
-        setupChart();
-        updateAnalysisSummary();
+        setupCarousel();
 
         text_view_name.setText("Hello, " + mainUser.getName());
 
@@ -107,48 +110,55 @@ public class AccountFragment extends Fragment {
         add_bank_account = getView().findViewById(R.id.image_view_add_bank_account);
         add_credit_card = getView().findViewById(R.id.image_view_add_credit_card);
         linear_layout_request_money = getView().findViewById(R.id.linear_layout_request_money);
-        text_view_total_money = getView().findViewById(R.id.text_view_total_money);
         linear_layout_send_money = getView().findViewById(R.id.linear_layout_send_money);
         linear_layout_history = getView().findViewById(R.id.linear_layout_history);
-        balanceChart = getView().findViewById(R.id.balance_chart);
         
-        textIncomeTotal = getView().findViewById(R.id.text_income_total);
-        textExpenseTotal = getView().findViewById(R.id.text_expense_total);
-        textLoanTotal = getView().findViewById(R.id.text_loan_total);
+        viewPagerAnalysis = getView().findViewById(R.id.viewPager_analysis);
+        tabLayoutIndicator = getView().findViewById(R.id.tabLayout_indicator);
     }
 
-    private void updateAnalysisSummary() {
-        ArrayList<History> fullHistory = stackToArrayList(mainUser.getHistory());
-        int income = 0;
-        int expense = 0;
-        int loans = 0;
+    private void setupCarousel() {
+        if (viewPagerAnalysis == null) return;
 
-        Pattern pattern = Pattern.compile("₹(\\d+)");
-        for (History h : fullHistory) {
-            String process = h.getProcess();
-            Matcher matcher = pattern.matcher(process);
-            if (matcher.find()) {
-                int amount = Integer.parseInt(matcher.group(1));
-                if (process.toLowerCase().contains("requested") || process.toLowerCase().contains("received")) {
-                    income += amount;
-                    if (process.toLowerCase().contains("credit")) loans += amount;
-                } else if (process.toLowerCase().contains("paid") || process.toLowerCase().contains("sent")) {
-                    expense += amount;
-                }
-            }
+        List<AnalysisCarouselAdapter.AnalysisPage> pages = new ArrayList<>();
+        ArrayList<History> fullHistory = stackToArrayList(mainUser.getHistory());
+        
+        // --- Page 1: Balance Trend (Line Chart) ---
+        AnalysisCarouselAdapter.AnalysisPage trendPage = new AnalysisCarouselAdapter.AnalysisPage("Balance Activity", 0);
+        trendPage.lineEntries = calculateTrendEntries(fullHistory);
+        pages.add(trendPage);
+
+        // --- Page 2: Spend Analysis (Pie Chart) ---
+        AnalysisCarouselAdapter.AnalysisPage spendPage = new AnalysisCarouselAdapter.AnalysisPage("Spend Analysis", 1);
+        spendPage.pieEntries = calculateSpendDistribution(fullHistory);
+        pages.add(spendPage);
+
+        // --- Page 3: Summary Stats (Text) ---
+        AnalysisCarouselAdapter.AnalysisPage summaryPage = new AnalysisCarouselAdapter.AnalysisPage("Net Summary", 2);
+        
+        int cash = 0;
+        if (myBankAccount != null) {
+            for (BankAccount acc : myBankAccount) cash += acc.getCash();
+        }
+        
+        int debt = 0;
+        if (myCreditCard != null) {
+            for (CreditCard card : myCreditCard) debt += card.getLimit(); 
         }
 
-        if (textIncomeTotal != null) textIncomeTotal.setText("₹" + income);
-        if (textExpenseTotal != null) textExpenseTotal.setText("₹" + expense);
-        if (textLoanTotal != null) textLoanTotal.setText("₹" + loans);
+        summaryPage.mainStat = String.format("₹%,d", cash);
+        summaryPage.statLabel = "Total Account Value";
+        summaryPage.subDetails = String.format("Cash: ₹%,d | Credit: ₹%,d", cash, debt);
+        pages.add(summaryPage);
+
+        carouselAdapter = new AnalysisCarouselAdapter(pages);
+        viewPagerAnalysis.setAdapter(carouselAdapter);
+
+        new TabLayoutMediator(tabLayoutIndicator, viewPagerAnalysis, (tab, position) -> {}).attach();
     }
 
-    private void setupChart() {
-        if (balanceChart == null) return;
-
-        ArrayList<History> fullHistory = stackToArrayList(mainUser.getHistory());
+    private List<Entry> calculateTrendEntries(ArrayList<History> fullHistory) {
         List<Entry> entries = new ArrayList<>();
-        
         int currentTotal = 0;
         if (myBankAccount != null) {
             for (BankAccount acc : myBankAccount) currentTotal += acc.getCash();
@@ -158,56 +168,65 @@ public class AccountFragment extends Fragment {
         entries.add(new Entry(fullHistory.size(), runningBalance));
 
         Pattern pattern = Pattern.compile("₹(\\d+)");
-        
         for (int i = 0; i < fullHistory.size(); i++) {
             History h = fullHistory.get(i);
             String process = h.getProcess();
             Matcher matcher = pattern.matcher(process);
-            
             if (matcher.find()) {
                 int amount = Integer.parseInt(matcher.group(1));
-                if (process.toLowerCase().contains("paid") || process.toLowerCase().contains("sent")) {
-                    runningBalance += amount;
-                } else if (process.toLowerCase().contains("requested") || process.toLowerCase().contains("received")) {
-                    runningBalance -= amount;
-                }
+                if (process.toLowerCase().contains("paid") || process.toLowerCase().contains("sent")) runningBalance += amount;
+                else if (process.toLowerCase().contains("requested") || process.toLowerCase().contains("received")) runningBalance -= amount;
             }
             entries.add(0, new Entry(fullHistory.size() - 1 - i, runningBalance));
         }
+        if (entries.isEmpty()) entries.add(new Entry(0, currentTotal));
+        return entries;
+    }
 
-        if (entries.isEmpty()) {
-            entries.add(new Entry(0, currentTotal));
+    private List<PieEntry> calculateSpendDistribution(ArrayList<History> fullHistory) {
+        List<PieEntry> entries = new ArrayList<>();
+        int power = 0, gas = 0, internet = 0, phone = 0, water = 0, transfers = 0, loans = 0, other = 0;
+
+        Pattern pattern = Pattern.compile("₹(\\d+)");
+        for (History h : fullHistory) {
+            String process = h.getProcess().toLowerCase();
+            Matcher matcher = pattern.matcher(process);
+            if (matcher.find()) {
+                int amount = Integer.parseInt(matcher.group(1));
+                if (process.contains("electric") || process.contains("power")) power += amount;
+                else if (process.contains("gas") || process.contains("fuel")) gas += amount;
+                else if (process.contains("internet")) internet += amount;
+                else if (process.contains("phone")) phone += amount;
+                else if (process.contains("water")) water += amount;
+                else if (process.contains("sent") || process.contains("transfer")) transfers += amount;
+                else if (process.contains("credit") || process.contains("loan")) loans += amount;
+                else if (process.contains("paid")) other += amount;
+            }
         }
 
-        LineDataSet dataSet = new LineDataSet(entries, "Spending Analysis");
-        dataSet.setColor(Color.parseColor("#0071E3"));
-        dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-        dataSet.setDrawFilled(true);
-        dataSet.setFillColor(Color.parseColor("#0071E3"));
-        dataSet.setFillAlpha(30);
-        dataSet.setDrawCircles(false);
-        dataSet.setDrawValues(false);
-        dataSet.setLineWidth(2.5f);
+        if (power > 0) entries.add(new PieEntry(power, "Power"));
+        if (gas > 0) entries.add(new PieEntry(gas, "Fuel"));
+        if (internet > 0) entries.add(new PieEntry(internet, "Internet"));
+        if (phone > 0) entries.add(new PieEntry(phone, "Phone"));
+        if (water > 0) entries.add(new PieEntry(water, "Water"));
+        if (transfers > 0) entries.add(new PieEntry(transfers, "Transfers"));
+        if (loans > 0) entries.add(new PieEntry(loans, "Loans"));
+        if (other > 0) entries.add(new PieEntry(other, "Misc"));
+        
+        if (entries.isEmpty()) entries.add(new PieEntry(1, "No Activity"));
+        return entries;
+    }
 
-        LineData lineData = new LineData(dataSet);
-        balanceChart.setData(lineData);
-        balanceChart.getDescription().setEnabled(false);
-        balanceChart.getLegend().setEnabled(false);
-        balanceChart.getXAxis().setEnabled(false);
-        balanceChart.getAxisLeft().setEnabled(false);
-        balanceChart.getAxisRight().setEnabled(false);
-        balanceChart.setTouchEnabled(true);
-        balanceChart.invalidate();
+    private String calculateNetWorth() {
+        int total = 0;
+        if (myBankAccount != null) {
+            for (BankAccount acc : myBankAccount) total += acc.getCash();
+        }
+        return String.format("₹%,d", total);
     }
 
     public void setTotalMoney(ArrayList<BankAccount> MyBankAccounts){
-        int totalmoney = 0;
-        if (MyBankAccounts != null) {
-            for (int i = 0; i<MyBankAccounts.size();i++){
-                totalmoney += MyBankAccounts.get(i).getCash();
-            }
-        }
-        text_view_total_money.setText(String.format("%,d.00", totalmoney));
+        setupCarousel();
     }
 
     public void accountsToDatabase(BankAccount bankAc){
@@ -339,8 +358,6 @@ public class AccountFragment extends Fragment {
                     History hs = new History(mainUser.getId(),"New Bank Account Added.", Calendar.getInstance().getTime());
                     mainUser.getHistory().push(hs);
                     historyToDatabase(hs);
-                    setupChart();
-                    updateAnalysisSummary();
                 });
                 ad.create().show();
             }
@@ -410,8 +427,6 @@ public class AccountFragment extends Fragment {
                         History hs = new History(mainUser.getId(),"Money Requested: ₹" + amount, Calendar.getInstance().getTime());
                         mainUser.getHistory().push(hs);
                         historyToDatabase(hs);
-                        setupChart();
-                        updateAnalysisSummary();
                     } catch (Exception e) {}
                 });
                 ad.create().show();
@@ -465,8 +480,6 @@ public class AccountFragment extends Fragment {
                             History hs = new History(mainUser.getId(),"Internal Transfer: ₹" + amount, Calendar.getInstance().getTime());
                             mainUser.getHistory().push(hs);
                             historyToDatabase(hs);
-                            setupChart();
-                            updateAnalysisSummary();
                         } else {
                             Toast.makeText(getApplicationContext(), "Insufficient funds", Toast.LENGTH_SHORT).show();
                         }
@@ -476,7 +489,7 @@ public class AccountFragment extends Fragment {
             });
             ad3.create().show();
         });
-        ad2.create().show();
+        ad2.show();
     }
 
     private void transferToAnother() {
@@ -528,8 +541,6 @@ public class AccountFragment extends Fragment {
                                     History hs = new History(mainUser.getId(),"Sent ₹" + amount + " to " + accNo, Calendar.getInstance().getTime());
                                     mainUser.getHistory().push(hs);
                                     historyToDatabase(hs);
-                                    setupChart();
-                                    updateAnalysisSummary();
                                     Toast.makeText(getApplicationContext(), "Sent Successfully", Toast.LENGTH_SHORT).show();
                                 } else {
                                     Toast.makeText(getApplicationContext(), "Insufficient funds", Toast.LENGTH_SHORT).show();
