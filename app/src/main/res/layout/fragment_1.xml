@@ -128,6 +128,86 @@
                         android:layout_height="120dp"
                         android:layout_marginTop="16dp" />
 
+                    <!-- Spend Analysis Summary -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="16dp"
+                        android:weightSum="3">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Income"
+                                android:textColor="@color/apple_text_secondary"
+                                android:textSize="10sp"
+                                android:fontFamily="sans-serif-bold"
+                                android:textAllCaps="true"/>
+                            <TextView
+                                android:id="@+id/text_income_total"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₹0"
+                                android:textColor="#2ECC71"
+                                android:textSize="14sp"
+                                android:fontFamily="sans-serif-black"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Expenses"
+                                android:textColor="@color/apple_text_secondary"
+                                android:textSize="10sp"
+                                android:fontFamily="sans-serif-bold"
+                                android:textAllCaps="true"/>
+                            <TextView
+                                android:id="@+id/text_expense_total"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₹0"
+                                android:textColor="#E74C3C"
+                                android:textSize="14sp"
+                                android:fontFamily="sans-serif-black"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="end">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Loans"
+                                android:textColor="@color/apple_text_secondary"
+                                android:textSize="10sp"
+                                android:fontFamily="sans-serif-bold"
+                                android:textAllCaps="true"/>
+                            <TextView
+                                android:id="@+id/text_loan_total"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₹0"
+                                android:textColor="@color/apple_blue"
+                                android:textSize="14sp"
+                                android:fontFamily="sans-serif-black"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
