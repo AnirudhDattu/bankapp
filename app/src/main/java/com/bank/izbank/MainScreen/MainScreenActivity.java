@@ -3,21 +3,27 @@ package com.bank.izbank.MainScreen;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bank.izbank.R;
 import com.bank.izbank.Sign.SignIn;
@@ -29,11 +35,14 @@ import com.parse.livequery.SubscriptionHandling;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.List;
 
 public class MainScreenActivity extends AppCompatActivity {
 
     private static final String TAG = "MainScreenActivity";
     private static final String CHANNEL_ID = "UPI_PAYMENT_CHANNEL";
+    private static final int PERMISSION_REQUEST_CODE = 112;
     private BottomNavigationView bottomNavigationView;
 
     final Fragment fragment1 = new AccountFragment();
@@ -44,6 +53,9 @@ public class MainScreenActivity extends AppCompatActivity {
 
     private Fragment tempFragment = fragment1;
     final FragmentManager fm = getSupportFragmentManager();
+    
+    private Handler pollingHandler = new Handler();
+    private Date lastCheckDate = new Date();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +63,8 @@ public class MainScreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main_screen);
 
         createNotificationChannel();
+        requestNotificationPermission();
+        
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         fm.beginTransaction().add(R.id.fragment_container, fragment5, "5").hide(fragment5).commit();
@@ -82,6 +96,17 @@ public class MainScreenActivity extends AppCompatActivity {
 
         // Initialize Real-time Payment Notifications
         setupPaymentNotifications();
+        
+        // Start fallback polling just in case LiveQuery is not enabled on server
+        startPollingFallback();
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, PERMISSION_REQUEST_CODE);
+            }
+        }
     }
 
     private void createNotificationChannel() {
@@ -91,6 +116,8 @@ public class MainScreenActivity extends AppCompatActivity {
             int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
+            channel.enableVibration(true);
+            channel.setVibrationPattern(new long[]{0, 500, 200, 500});
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
@@ -100,8 +127,10 @@ public class MainScreenActivity extends AppCompatActivity {
         if (SignIn.mainUser == null) return;
 
         try {
-            // LiveQuery Client pointing to back4app
-            ParseLiveQueryClient parseLiveQueryClient = ParseLiveQueryClient.Factory.getClient(new URI("wss://izbank.b4a.io"));
+            // Trying multiple common Back4App LiveQuery URL patterns
+            String liveQueryUrl = "wss://parseapi.back4app.com"; // Standard proxy
+            
+            ParseLiveQueryClient parseLiveQueryClient = ParseLiveQueryClient.Factory.getClient(new URI(liveQueryUrl));
             
             ParseQuery<ParseObject> parseQuery = ParseQuery.getQuery("History");
             parseQuery.whereEqualTo("userId", SignIn.mainUser.getId());
@@ -110,16 +139,57 @@ public class MainScreenActivity extends AppCompatActivity {
             SubscriptionHandling<ParseObject> subscriptionHandling = parseLiveQueryClient.subscribe(parseQuery);
             
             subscriptionHandling.handleEvent(SubscriptionHandling.Event.CREATE, (query, history) -> {
-                runOnUiThread(() -> {
-                    String details = history.getString("process");
-                    showPaymentReceivedPopup(details);
-                    showSystemNotification("Money Received!", details);
-                });
+                Log.d(TAG, "LiveQuery: New Payment Received!");
+                handleNewTransaction(history.getString("process"));
+            });
+            
+            subscriptionHandling.handleError((query, exception) -> {
+                Log.e(TAG, "LiveQuery Error: " + exception.getMessage());
+                // If standard proxy fails, we rely on polling
             });
             
         } catch (URISyntaxException e) {
             Log.e(TAG, "LiveQuery URI Error: " + e.getMessage());
         }
+    }
+
+    private void startPollingFallback() {
+        pollingHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (SignIn.mainUser != null) {
+                    ParseQuery<ParseObject> query = ParseQuery.getQuery("History");
+                    query.whereEqualTo("userId", SignIn.mainUser.getId());
+                    query.whereEqualTo("isIncome", true);
+                    query.whereGreaterThan("createdAt", lastCheckDate);
+                    query.findInBackground((objects, e) -> {
+                        if (e == null && objects != null && !objects.isEmpty()) {
+                            for (ParseObject obj : objects) {
+                                if (obj.getCreatedAt().after(lastCheckDate)) {
+                                    handleNewTransaction(obj.getString("process"));
+                                    lastCheckDate = obj.getCreatedAt();
+                                }
+                            }
+                        }
+                        pollingHandler.postDelayed(this, 5000); // Poll every 5 seconds
+                    });
+                } else {
+                    pollingHandler.postDelayed(this, 5000);
+                }
+            }
+        }, 5000);
+    }
+
+    private void handleNewTransaction(String details) {
+        runOnUiThread(() -> {
+            showPaymentReceivedPopup(details);
+            showSystemNotification("Money Received! 💰", details);
+            
+            // Refresh UI
+            if (tempFragment instanceof AccountFragment) {
+                ((AccountFragment) tempFragment).onResume();
+            }
+        });
     }
 
     private void showSystemNotification(String title, String content) {
@@ -128,6 +198,8 @@ public class MainScreenActivity extends AppCompatActivity {
                 .setContentTitle(title)
                 .setContentText(content)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setAutoCancel(true);
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -145,10 +217,27 @@ public class MainScreenActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            dialog.getWindow().getAttributes().windowAnimations = R.style.ModernDialogAnimation;
         }
 
         popupView.findViewById(R.id.btn_dismiss_popup).setOnClickListener(v -> dialog.dismiss());
         
         dialog.show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        pollingHandler.removeCallbacksAndMessages(null);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Notifications Enabled", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }
