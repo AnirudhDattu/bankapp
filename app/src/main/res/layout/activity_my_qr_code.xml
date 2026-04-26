@@ -22,7 +22,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="My QR Code"
+            android:text="Receive Money"
             android:fontFamily="sans-serif-black"
             android:textSize="20sp"
             android:textColor="@color/apple_text_primary" />
@@ -34,32 +34,25 @@
         android:layout_marginTop="32dp"
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="24dp"
-        app:cardElevation="4dp">
+        app:cardElevation="0dp"
+        app:strokeColor="@color/apple_grey_light"
+        app:strokeWidth="1dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="32dp"
-            android:gravity="center">
+            android:gravity="center"
+            android:padding="32dp">
 
             <TextView
                 android:id="@+id/txt_account_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Your Name"
+                android:text="John Doe"
                 android:textSize="18sp"
-                android:fontFamily="sans-serif-bold"
+                android:fontFamily="sans-serif-black"
                 android:textColor="@color/apple_text_primary" />
-
-            <TextView
-                android:id="@+id/txt_upi_id"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="phone@izbank"
-                android:textSize="14sp"
-                android:textColor="@color/apple_text_secondary"
-                android:layout_marginTop="4dp" />
 
             <ImageView
                 android:id="@+id/img_qr_code"
@@ -68,29 +61,50 @@
                 android:layout_marginTop="24dp"
                 android:scaleType="fitCenter" />
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Scan to pay using any UPI app"
-                android:textSize="12sp"
-                android:textColor="@color/apple_text_secondary"
-                android:layout_marginTop="24dp" />
+                android:layout_marginTop="24dp"
+                android:background="@drawable/apple_card_bg"
+                android:backgroundTint="#F2F2F7"
+                android:padding="12dp"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="UPI ID: "
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/apple_text_secondary" />
+
+                <TextView
+                    android:id="@+id/txt_upi_id"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="9876543210.1234@izbank"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-black"
+                    android:textColor="@color/apple_blue" />
+            </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select Bank Account"
+        android:layout_marginTop="32dp"
+        android:layout_gravity="center"
+        android:text="Select Bank Account to Receive"
+        android:textSize="14sp"
         android:fontFamily="sans-serif-bold"
-        android:textSize="16sp"
-        android:textColor="@color/apple_text_primary"
-        android:layout_marginTop="32dp" />
+        android:textColor="@color/apple_text_secondary" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_bank_accounts"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:layout_marginTop="12dp" />
 
 </LinearLayout>

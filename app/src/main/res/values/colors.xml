@@ -15,6 +15,7 @@
     <color name="apple_text_primary">#1D1D1F</color>
     <color name="apple_text_secondary">#86868B</color>
     <color name="apple_blue">#0071E3</color>
+    <color name="apple_green">#34C759</color>
     <color name="apple_grey_light">#E8E8ED</color>
 
     <!-- Dark Mode Colors -->

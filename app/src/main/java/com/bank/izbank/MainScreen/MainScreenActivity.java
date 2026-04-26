@@ -1,18 +1,34 @@
 package com.bank.izbank.MainScreen;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 import com.bank.izbank.R;
+import com.bank.izbank.Sign.SignIn;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.livequery.ParseLiveQueryClient;
+import com.parse.livequery.SubscriptionHandling;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class MainScreenActivity extends AppCompatActivity {
 
+    private static final String TAG = "MainScreenActivity";
     private BottomNavigationView bottomNavigationView;
 
     final Fragment fragment1 = new AccountFragment();
@@ -57,5 +73,50 @@ public class MainScreenActivity extends AppCompatActivity {
             }
             return true;
         });
+
+        // Initialize Real-time Payment Notifications
+        setupPaymentNotifications();
+    }
+
+    private void setupPaymentNotifications() {
+        if (SignIn.mainUser == null) return;
+
+        try {
+            // Note: Replace with your actual LiveQuery server URL if different
+            ParseLiveQueryClient parseLiveQueryClient = ParseLiveQueryClient.Factory.getClient(new URI("wss://izbank.b4a.io"));
+            
+            ParseQuery<ParseObject> parseQuery = ParseQuery.getQuery("History");
+            parseQuery.whereEqualTo("userId", SignIn.mainUser.getId());
+            parseQuery.whereEqualTo("isIncome", true);
+            
+            SubscriptionHandling<ParseObject> subscriptionHandling = parseLiveQueryClient.subscribe(parseQuery);
+            
+            subscriptionHandling.handleEvent(SubscriptionHandling.Event.CREATE, (query, history) -> {
+                runOnUiThread(() -> {
+                    showPaymentReceivedPopup(history.getString("process"));
+                });
+            });
+            
+        } catch (URISyntaxException e) {
+            Log.e(TAG, "LiveQuery URI Error: " + e.getMessage());
+        }
+    }
+
+    private void showPaymentReceivedPopup(String processDetails) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View popupView = getLayoutInflater().inflate(R.layout.layout_payment_received_popup, null);
+        builder.setView(popupView);
+
+        TextView detailsText = popupView.findViewById(R.id.txt_payment_details);
+        detailsText.setText(processDetails);
+
+        AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        popupView.findViewById(R.id.btn_dismiss_popup).setOnClickListener(v -> dialog.dismiss());
+        
+        dialog.show();
     }
 }
