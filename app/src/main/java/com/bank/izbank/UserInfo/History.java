@@ -7,16 +7,26 @@ public class History {
     private String userId;
     private String Process;
     private Date date;
+    private boolean isIncome; // true for received, false for sent
 
     public History(String userId, String process, Date date) {
         this.userId = userId;
         this.Process = process;
         this.date = date;
+        this.isIncome = process.contains("+₹") || process.toLowerCase().contains("received");
+    }
+
+    public History(String userId, String process, Date date, boolean isIncome) {
+        this.userId = userId;
+        this.Process = process;
+        this.date = date;
+        this.isIncome = isIncome;
     }
 
     public History(String userId, String process, String dateString) {
         this.userId = userId;
         this.Process = process;
+        this.isIncome = process.contains("+₹") || process.toLowerCase().contains("received");
         try {
             SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
             this.date = format.parse(dateString);
@@ -26,9 +36,9 @@ public class History {
     }
 
     public Date getDateDate() {
-
         return date;
     }
+
     public String getDateString() {
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
         return format.format(date);
@@ -52,5 +62,13 @@ public class History {
 
     public void setProcess(String process) {
         Process = process;
+    }
+
+    public boolean isIncome() {
+        return isIncome;
+    }
+
+    public void setIncome(boolean income) {
+        isIncome = income;
     }
 }

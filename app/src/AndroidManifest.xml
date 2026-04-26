@@ -64,10 +64,6 @@
             android:stateNotNeeded="true"
             android:theme="@style/zxing_CaptureTheme" />
 
-        <activity
-            android:name=".MainScreen.UPIHistoryActivity"
-            android:exported="false" />
-
     </application>
 
 </manifest>

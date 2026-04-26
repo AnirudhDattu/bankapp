@@ -1,139 +1,162 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:background="@color/white">
+    android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/popup_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Account Details"
-        android:textColor="@color/apple_text_primary"
-        android:textSize="22sp"
-        android:fontFamily="sans-serif-black"
-        android:layout_marginBottom="20dp"/>
-
-    <!-- Info Row: Phone -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingVertical="8dp">
-        <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/icon_phone"
-            app:tint="@color/apple_blue" />
-        <TextView
-            android:id="@+id/text_view_phone_number"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:text="+1 234 567 890"
-            android:textColor="@color/apple_text_primary"
-            android:textSize="15sp"
-            android:fontFamily="sans-serif-medium" />
-    </LinearLayout>
-
-    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/apple_grey_light" android:layout_marginVertical="4dp"/>
-
-    <!-- Info Row: Address -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="top"
-        android:paddingVertical="8dp">
-        <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginTop="2dp"
-            android:src="@drawable/icon_address"
-            app:tint="@color/apple_blue" />
-        <TextView
-            android:id="@+id/text_view_adres"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:text="Address Details"
-            android:textColor="@color/apple_text_primary"
-            android:textSize="15sp"
-            android:fontFamily="sans-serif-medium" />
-    </LinearLayout>
-
-    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/apple_grey_light" android:layout_marginVertical="4dp"/>
-
-    <!-- Info Row: Job -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingVertical="8dp">
-        <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/icon_profession"
-            app:tint="@color/apple_blue" />
-        <TextView
-            android:id="@+id/text_view_job"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:text="Profession"
-            android:textColor="@color/apple_text_primary"
-            android:textSize="15sp"
-            android:fontFamily="sans-serif-medium" />
-    </LinearLayout>
-
-    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/apple_grey_light" android:layout_marginVertical="4dp"/>
-
-    <!-- Accounts and Credits Summary -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:background="@drawable/apple_card_bg"
-        android:backgroundTint="#F9F9FB">
+        android:padding="24dp"
+        android:background="@color/white">
 
         <TextView
-            android:id="@+id/text_view_bank_account_counter"
+            android:id="@+id/popup_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Account Details"
+            android:textColor="@color/apple_text_primary"
+            android:textSize="22sp"
+            android:fontFamily="sans-serif-black"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- Info Row: Phone -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Bank Accounts"
-            android:textColor="@color/apple_text_secondary"
-            android:textSize="13sp"
-            android:lineSpacingExtra="4dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingVertical="8dp">
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/icon_phone"
+                app:tint="@color/apple_blue" />
+            <TextView
+                android:id="@+id/text_view_phone_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="+1 234 567 890"
+                android:textColor="@color/apple_text_primary"
+                android:textSize="15sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/apple_grey_light" android:layout_marginVertical="8dp"/>
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/apple_grey_light" android:layout_marginVertical="4dp"/>
 
+        <!-- Info Row: Address -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="top"
+            android:paddingVertical="8dp">
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="2dp"
+                android:src="@drawable/icon_address"
+                app:tint="@color/apple_blue" />
+            <TextView
+                android:id="@+id/text_view_adres"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="Address Details"
+                android:textColor="@color/apple_text_primary"
+                android:textSize="15sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/apple_grey_light" android:layout_marginVertical="4dp"/>
+
+        <!-- Info Row: Job -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingVertical="8dp">
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/icon_profession"
+                app:tint="@color/apple_blue" />
+            <TextView
+                android:id="@+id/text_view_job"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="Profession"
+                android:textColor="@color/apple_text_primary"
+                android:textSize="15sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/apple_grey_light" android:layout_marginVertical="4dp"/>
+
+        <!-- Accounts Summary -->
         <TextView
-            android:id="@+id/text_view_credit_card_counter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bank Accounts (Tap to Edit Balance/Delete)"
+            android:textColor="@color/apple_text_primary"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif-black"
+            android:layout_marginTop="16dp"/>
+
+        <LinearLayout
+            android:id="@+id/layout_bank_accounts_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Credit Cards"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/apple_card_bg"
+            android:backgroundTint="#F9F9FB">
+            <!-- Dynamic bank accounts will be added here -->
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_add_bank_account"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+ Add New Bank Account"
+            android:textColor="@color/apple_blue"
+            android:textSize="12sp" />
+
+        <!-- Admin Controls -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_delete_user"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="DELETE USER PERMANENTLY"
+                android:backgroundTint="#FF3B30"
+                android:textColor="@color/white"
+                app:cornerRadius="12dp" />
+
+        </LinearLayout>
+
+        <!-- Interest Details -->
+        <TextView
+            android:id="@+id/text_view_interest_rate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Interest Details"
             android:textColor="@color/apple_text_secondary"
-            android:textSize="13sp"
-            android:lineSpacingExtra="4dp" />
+            android:textSize="12sp"
+            android:gravity="center"
+            android:fontFamily="sans-serif" />
+
     </LinearLayout>
-
-    <!-- Interest Details -->
-    <TextView
-        android:id="@+id/text_view_interest_rate"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Interest Details"
-        android:textColor="@color/apple_text_secondary"
-        android:textSize="12sp"
-        android:gravity="center"
-        android:fontFamily="sans-serif" />
-
-</LinearLayout>
+</ScrollView>

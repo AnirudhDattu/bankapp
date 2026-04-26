@@ -91,7 +91,7 @@ public class CreditAdapter extends RecyclerView.Adapter<CreditAdapter.CardViewOb
 
         holder.textViewInstallment.setText(String.valueOf(credit.getInstallment())+" months");
         holder.textViewInterestRate.setText("%"+credit.getInterestRate());
-        holder.textViewAmount.setText(credit.getPayAmount()+" TL");
+        holder.textViewAmount.setText("₹" + credit.getPayAmount());
         holder.cardViewCredit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

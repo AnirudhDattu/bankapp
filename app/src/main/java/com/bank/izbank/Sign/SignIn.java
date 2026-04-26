@@ -156,8 +156,18 @@ public class SignIn extends AppCompatActivity {
 
                             String cash=object.getString("cash");
                             String accountNo=object.getString("accountNo");
+                            String upiId = object.getString("upiId");
 
-                            BankAccount tempAccount = new BankAccount(accountNo,Integer.parseInt(cash));
+                            BankAccount tempAccount = new BankAccount(accountNo,Integer.parseInt(cash), upiId, user.getId());
+                            
+                            // Protocol Enforcement: Auto-generate and save UPI ID if missing or inconsistent
+                            String expectedUpiId = tempAccount.generateUpiId();
+                            if (upiId == null || !upiId.equals(expectedUpiId)) {
+                                tempAccount.setUpiId(expectedUpiId);
+                                object.put("upiId", expectedUpiId);
+                                object.saveInBackground();
+                                Log.d("SignIn", "Healed UPI ID for " + user.getId() + " to " + expectedUpiId);
+                            }
 
                             accounts.add(tempAccount);
                         }
@@ -212,8 +222,9 @@ public class SignIn extends AppCompatActivity {
 
                             String historyProcess=object.getString("process");
                             java.util.Date historyDate=object.getDate("date");
+                            boolean isIncome = object.getBoolean("isIncome");
 
-                            History tempHistory = new History(SignIn.mainUser.getId(), historyProcess, historyDate);
+                            History tempHistory = new History(SignIn.mainUser.getId(), historyProcess, historyDate, isIncome);
 
                             historyStack.push(tempHistory);
                         }
