@@ -3,11 +3,15 @@ package com.bank.izbank.MainScreen;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,6 +33,7 @@ import java.net.URISyntaxException;
 public class MainScreenActivity extends AppCompatActivity {
 
     private static final String TAG = "MainScreenActivity";
+    private static final String CHANNEL_ID = "UPI_PAYMENT_CHANNEL";
     private BottomNavigationView bottomNavigationView;
 
     final Fragment fragment1 = new AccountFragment();
@@ -45,6 +50,7 @@ public class MainScreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
 
+        createNotificationChannel();
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         fm.beginTransaction().add(R.id.fragment_container, fragment5, "5").hide(fragment5).commit();
@@ -78,11 +84,23 @@ public class MainScreenActivity extends AppCompatActivity {
         setupPaymentNotifications();
     }
 
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "UPI Payment Notifications";
+            String description = "Notifications for money received";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
     private void setupPaymentNotifications() {
         if (SignIn.mainUser == null) return;
 
         try {
-            // Note: Replace with your actual LiveQuery server URL if different
+            // LiveQuery Client pointing to back4app
             ParseLiveQueryClient parseLiveQueryClient = ParseLiveQueryClient.Factory.getClient(new URI("wss://izbank.b4a.io"));
             
             ParseQuery<ParseObject> parseQuery = ParseQuery.getQuery("History");
@@ -93,13 +111,27 @@ public class MainScreenActivity extends AppCompatActivity {
             
             subscriptionHandling.handleEvent(SubscriptionHandling.Event.CREATE, (query, history) -> {
                 runOnUiThread(() -> {
-                    showPaymentReceivedPopup(history.getString("process"));
+                    String details = history.getString("process");
+                    showPaymentReceivedPopup(details);
+                    showSystemNotification("Money Received!", details);
                 });
             });
             
         } catch (URISyntaxException e) {
             Log.e(TAG, "LiveQuery URI Error: " + e.getMessage());
         }
+    }
+
+    private void showSystemNotification(String title, String content) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.icon_bank)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify((int) System.currentTimeMillis(), builder.build());
     }
 
     private void showPaymentReceivedPopup(String processDetails) {

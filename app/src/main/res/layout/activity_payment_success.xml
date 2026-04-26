@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/apple_green">
+
+    <!-- Loading State Container -->
+    <LinearLayout
+        android:id="@+id/layout_processing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="visible"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ProgressBar
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:indeterminateTint="@color/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Processing Payment..."
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-medium" />
+    </LinearLayout>
+
+    <!-- Success State Container -->
+    <LinearLayout
+        android:id="@+id/layout_success"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/img_success_check"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_check_circle"
+            app:tint="@color/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Payment Successful"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:fontFamily="sans-serif-black" />
+
+        <TextView
+            android:id="@+id/txt_success_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="₹ 0"
+            android:textColor="@color/white"
+            android:textSize="48sp"
+            android:fontFamily="sans-serif-black" />
+
+        <TextView
+            android:id="@+id/txt_success_recipient"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="To: Recipient Name"
+            android:textColor="#E0FFFFFF"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-medium" />
+
+        <TextView
+            android:id="@+id/txt_transaction_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Ref ID: 1234567890"
+            android:textColor="#B0FFFFFF"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_done_success"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_margin="32dp"
+        android:text="DONE"
+        android:textAllCaps="false"
+        android:textSize="18sp"
+        android:fontFamily="sans-serif-bold"
+        android:textColor="@color/apple_green"
+        android:backgroundTint="@color/white"
+        android:visibility="gone"
+        app:cornerRadius="28dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

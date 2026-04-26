@@ -1,5 +1,6 @@
 package com.bank.izbank.MainScreen;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -132,7 +133,7 @@ public class ConfirmPaymentActivity extends AppCompatActivity {
         }
 
         btnPayNow.setEnabled(false);
-        btnPayNow.setText("Verifying Connection...");
+        btnPayNow.setText("Processing...");
 
         // PROTOCOL STEP 1: VERIFY RECIPIENT EXISTS BEFORE DEDUCTION
         verifyRecipientConnection(amount);
@@ -144,11 +145,9 @@ public class ConfirmPaymentActivity extends AppCompatActivity {
         
         recipientQuery.getFirstInBackground((recipientAccObj, e) -> {
             if (e == null && recipientAccObj != null) {
-                // Connection Established. Proceed to Step 2.
-                runOnUiThread(() -> btnPayNow.setText("Processing Deduction..."));
                 deductFromSender(amount, recipientAccObj);
             } else {
-                handleError("Connection Failed: Recipient not found. No money deducted.");
+                handleError("Recipient not found.");
             }
         });
     }
@@ -170,19 +169,15 @@ public class ConfirmPaymentActivity extends AppCompatActivity {
                 senderAccObj.put("cash", String.valueOf(newBalance));
                 senderAccObj.saveInBackground(e1 -> {
                     if (e1 == null) {
-                        // Local state update
                         selectedAccount.setCash(newBalance);
                         logSenderHistory(amount);
-                        
-                        // PROTOCOL STEP 3: CREDIT RECIPIENT AND VERIFY
-                        runOnUiThread(() -> btnPayNow.setText("Finalizing Transfer..."));
                         creditRecipientAndVerify(amount, recipientAccObj);
                     } else {
-                        handleError("Deduction failed. Please try again.");
+                        handleError("Deduction failed.");
                     }
                 });
             } else {
-                handleError("Sender account verification failed.");
+                handleError("Sender account error.");
             }
         });
     }
@@ -194,33 +189,16 @@ public class ConfirmPaymentActivity extends AppCompatActivity {
         recipientAccObj.put("cash", String.valueOf(expectedBalance));
         recipientAccObj.saveInBackground(e -> {
             if (e == null) {
-                // PROTOCOL STEP 4: TRIPLE VERIFICATION CHECK
-                // Re-fetch to confirm the database reflects the new balance correctly
-                verifyFinalTransactionState(recipientAccObj.getObjectId(), expectedBalance, amount, recipientAccObj.getString("userId"));
+                logRecipientHistory(recipientAccObj.getString("userId"), amount);
+                
+                // LAUNCH THE ANIMATION ACTIVITY
+                Intent intent = new Intent(ConfirmPaymentActivity.this, PaymentSuccessActivity.class);
+                intent.putExtra("amount", String.valueOf(amount));
+                intent.putExtra("recipient", recipientName != null ? recipientName : recipientUpiId);
+                startActivity(intent);
+                finish();
             } else {
-                // Critical Failure: Money deducted from sender but not added to recipient
-                handleCriticalError("Credit failed. Deduction occurred. Contact support with TxnID: " + recipientAccObj.getObjectId());
-            }
-        });
-    }
-
-    private void verifyFinalTransactionState(String objectId, int expectedBalance, int amount, String recipientUserId) {
-        ParseQuery<ParseObject> verifyQuery = ParseQuery.getQuery("BankAccount");
-        verifyQuery.getInBackground(objectId, (verifiedObj, e) -> {
-            if (e == null && verifiedObj != null) {
-                int actualBalance = Integer.parseInt(verifiedObj.getString("cash"));
-                if (actualBalance == expectedBalance) {
-                    // SUCCESS: Triple Verification Passed
-                    logRecipientHistory(recipientUserId, amount);
-                    runOnUiThread(() -> {
-                        Toast.makeText(this, "Transfer Completed Successfully (Verified)", Toast.LENGTH_LONG).show();
-                        finish();
-                    });
-                } else {
-                    handleCriticalError("Verification Mismatch: Balance reflection incomplete.");
-                }
-            } else {
-                handleCriticalError("Final Verification Failed: Could not confirm recipient credit.");
+                handleError("Failed to credit recipient.");
             }
         });
     }
@@ -258,15 +236,7 @@ public class ConfirmPaymentActivity extends AppCompatActivity {
 
     private void handleError(String message) {
         runOnUiThread(() -> {
-            Toast.makeText(this, "Error: " + message, Toast.LENGTH_LONG).show();
-            resetPayButton();
-        });
-    }
-
-    private void handleCriticalError(String message) {
-        runOnUiThread(() -> {
-            Toast.makeText(this, "CRITICAL: " + message, Toast.LENGTH_LONG).show();
-            // In a real app, this would trigger an automated reconciliation/alert
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
             resetPayButton();
         });
     }
