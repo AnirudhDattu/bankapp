@@ -1,13 +1,20 @@
 package com.bank.izbank.MainScreen;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,19 +42,18 @@ import com.bank.izbank.Job.Waiter;
 import com.bank.izbank.Job.Worker;
 import com.bank.izbank.R;
 import com.bank.izbank.Sign.SignIn;
-import com.bank.izbank.UserInfo.User;
-import com.parse.LogOutCallback;
-import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import static com.parse.Parse.getApplicationContext;
+import java.util.Locale;
 
 public class SettingFragment extends Fragment {
 
@@ -61,8 +67,32 @@ public class SettingFragment extends Fragment {
     private String[] jobs;
     private Job[] defaultJobs;
 
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
+
     public SettingFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Uri imageUri = result.getData().getData();
+                        try {
+                            InputStream inputStream = getContext().getContentResolver().openInputStream(imageUri);
+                            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                            userPhoto.setImageBitmap(bitmap);
+                            SignIn.mainUser.setPhoto(bitmap);
+                            savePhotoToDb(bitmap);
+                        } catch (IOException | NullPointerException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+        );
     }
 
     @Override
@@ -100,16 +130,21 @@ public class SettingFragment extends Fragment {
         updateButton.setOnClickListener(v -> updateProfile());
         logoutButton.setOnClickListener(v -> logOut());
         deleteButton.setOnClickListener(v -> confirmDelete());
+        
+        userPhoto.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            imagePickerLauncher.launch(intent);
+        });
     }
 
     private void populateUserData() {
         if (SignIn.mainUser != null) {
             userName.setText(SignIn.mainUser.getName());
             userJob.setText(SignIn.mainUser.getJob().getName());
-            userEmail.setText(SignIn.mainUser.getId() + "@izbank.com");
+            userEmail.setText(String.format("%s@izbank.com", SignIn.mainUser.getId()));
 
             editUserName.setText(SignIn.mainUser.getName());
-            editUserEmail.setText(SignIn.mainUser.getId() + "@izbank.com");
+            editUserEmail.setText(String.format("%s@izbank.com", SignIn.mainUser.getId()));
 
             if (SignIn.mainUser.getPhoto() != null) {
                 userPhoto.setImageBitmap(SignIn.mainUser.getPhoto());
@@ -117,8 +152,35 @@ public class SettingFragment extends Fragment {
         }
     }
 
+    private void savePhotoToDb(Bitmap bitmap) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+        byte[] bytes = outputStream.toByteArray();
+        
+        ParseFile parseFile = new ParseFile("profile.png", bytes);
+        parseFile.saveInBackground((SaveCallback) e -> {
+            if (e == null) {
+                ParseQuery<ParseObject> query = ParseQuery.getQuery("UserInfo");
+                query.whereEqualTo("username", SignIn.mainUser.getId());
+                query.findInBackground((objects, e1) -> {
+                    if (e1 == null && !objects.isEmpty()) {
+                        ParseObject userInfo = objects.get(0);
+                        userInfo.put("images", parseFile);
+                        userInfo.saveInBackground(e2 -> {
+                            if (e2 == null) {
+                                if (getContext() != null) {
+                                    Toast.makeText(getContext(), "Profile photo updated permanently!", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
     private void setDate() {
-        SimpleDateFormat format = new SimpleDateFormat("EEEE, dd MMMM");
+        SimpleDateFormat format = new SimpleDateFormat("EEEE, dd MMMM", Locale.getDefault());
         textViewDate.setText(format.format(Calendar.getInstance().getTime()));
     }
 
@@ -129,15 +191,17 @@ public class SettingFragment extends Fragment {
         jobs = new String[]{"Contractor", "Doctor", "Driver", "Engineer", "Entrepreneur", "Farmer", "Police", "Soldier",
                 "Sportsman", "Student", "Teacher", "Waiter", "Worker"};
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, jobs);
-        spinner.setAdapter(adapter);
+        if (getContext() != null) {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, jobs);
+            spinner.setAdapter(adapter);
 
-        // Set selection to current job
-        if (SignIn.mainUser != null) {
-            for (int i = 0; i < jobs.length; i++) {
-                if (jobs[i].equalsIgnoreCase(SignIn.mainUser.getJob().getName())) {
-                    spinner.setSelection(i);
-                    break;
+            // Set selection to current job
+            if (SignIn.mainUser != null) {
+                for (int i = 0; i < jobs.length; i++) {
+                    if (jobs[i].equalsIgnoreCase(SignIn.mainUser.getJob().getName())) {
+                        spinner.setSelection(i);
+                        break;
+                    }
                 }
             }
         }
@@ -194,8 +258,10 @@ public class SettingFragment extends Fragment {
 
         if (!newPass.isEmpty()) {
             ParseUser currentUser = ParseUser.getCurrentUser();
-            currentUser.setPassword(newPass);
-            currentUser.saveInBackground();
+            if (currentUser != null) {
+                currentUser.setPassword(newPass);
+                currentUser.saveInBackground();
+            }
         }
     }
 
@@ -210,21 +276,26 @@ public class SettingFragment extends Fragment {
     }
 
     private void confirmDelete() {
-        new AlertDialog.Builder(getContext())
-                .setTitle("Delete Account")
-                .setMessage("Are you sure you want to permanently delete your account? This action cannot be undone.")
-                .setPositiveButton("Delete", (dialog, which) -> deleteAccount())
-                .setNegativeButton("Cancel", null)
-                .show();
+        if (getContext() != null) {
+            new AlertDialog.Builder(getContext())
+                    .setTitle("Delete Account")
+                    .setMessage("Are you sure you want to permanently delete your account? This action cannot be undone.")
+                    .setPositiveButton("Delete", (dialog, which) -> deleteAccount())
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        }
     }
 
     private void deleteAccount() {
-        ParseUser.getCurrentUser().deleteInBackground(e -> {
-            if (e == null) {
-                logOut();
-            } else {
-                Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        ParseUser currentUser = ParseUser.getCurrentUser();
+        if (currentUser != null) {
+            currentUser.deleteInBackground(e -> {
+                if (e == null) {
+                    logOut();
+                } else {
+                    Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 }

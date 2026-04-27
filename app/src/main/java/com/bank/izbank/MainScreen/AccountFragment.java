@@ -32,6 +32,7 @@ import com.bank.izbank.Sign.SignIn;
 import com.bank.izbank.UserInfo.History;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieEntry;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.tabs.TabLayout;
@@ -55,7 +56,7 @@ import static com.parse.Parse.getApplicationContext;
 
 public class AccountFragment extends Fragment {
     MaterialCardView linear_layout_request_money,linear_layout_send_money, linear_layout_history;
-    ImageView add_bank_account, add_credit_card;
+    ImageView add_bank_account, add_credit_card, image_view_profile_small;
     RecyclerView recyclerView;
     RecyclerView recyclerViewbankaccount, recyclerViewHistory;
     TextView text_view_name, date;
@@ -125,6 +126,26 @@ public class AccountFragment extends Fragment {
                 updateUI();
             }
         });
+        
+        // Refresh User Info (for Profile Photo)
+        ParseQuery<ParseObject> queryInfo = ParseQuery.getQuery("UserInfo");
+        queryInfo.whereEqualTo("username", mainUser.getId());
+        queryInfo.findInBackground((objects, e) -> {
+            if (e == null && !objects.isEmpty()) {
+                com.parse.ParseFile file = (com.parse.ParseFile) objects.get(0).get("images");
+                if (file != null) {
+                    file.getDataInBackground((data, e1) -> {
+                        if (e1 == null && data != null) {
+                            android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(data, 0, data.length);
+                            mainUser.setPhoto(bmp);
+                            if (image_view_profile_small != null) {
+                                image_view_profile_small.setImageBitmap(bmp);
+                            }
+                        }
+                    });
+                }
+            }
+        });
     }
 
     private void updateUI() {
@@ -139,6 +160,10 @@ public class AccountFragment extends Fragment {
         setupCarousel();
 
         text_view_name.setText("Hello, " + mainUser.getName());
+        
+        if (mainUser.getPhoto() != null) {
+            image_view_profile_small.setImageBitmap(mainUser.getPhoto());
+        }
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerViewbankaccount.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -161,6 +186,7 @@ public class AccountFragment extends Fragment {
         linear_layout_request_money = getView().findViewById(R.id.linear_layout_request_money);
         linear_layout_send_money = getView().findViewById(R.id.linear_layout_send_money);
         linear_layout_history = getView().findViewById(R.id.linear_layout_history);
+        image_view_profile_small = getView().findViewById(R.id.image_view_profile_small);
         
         viewPagerAnalysis = getView().findViewById(R.id.viewPager_analysis);
         tabLayoutIndicator = getView().findViewById(R.id.tabLayout_indicator);
@@ -203,13 +229,46 @@ public class AccountFragment extends Fragment {
         });
 
         add_bank_account.setOnClickListener(v -> {
-            showModernInputDialog("Initial Deposit", "Enter amount for new account.", "ADD", amountStr -> {
+            showModernInputDialog("Initial Deposit", "Enter amount for new account (Min: ₹1000).", "ADD", amountStr -> {
                 int amount = amountStr.isEmpty() ? 0 : Integer.parseInt(amountStr);
-                BankAccount newAcc = new BankAccount(amount);
-                myBankAccount.add(newAcc);
-                saveBankAccountToDb(newAcc);
-                updateUI();
+                if (amount < 1000) {
+                    Toast.makeText(getContext(), "Can't create account below min balance (₹1000)", Toast.LENGTH_LONG).show();
+                } else {
+                    BankAccount newAcc = new BankAccount(amount);
+                    myBankAccount.add(newAcc);
+                    saveBankAccountToDb(newAcc);
+                    updateUI();
+                    Toast.makeText(getContext(), "Account created successfully!", Toast.LENGTH_SHORT).show();
+                }
             });
+        });
+
+        image_view_profile_small.setOnClickListener(v -> {
+            if (getActivity() != null) {
+                BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
+                if (bottomNavigationView != null) {
+                    bottomNavigationView.setSelectedItemId(R.id.menu5);
+                }
+            }
+        });
+
+        linear_layout_send_money.setOnClickListener(v -> {
+            if (getActivity() != null) {
+                BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
+                if (bottomNavigationView != null) {
+                    bottomNavigationView.setSelectedItemId(R.id.menu_upi);
+                }
+            }
+        });
+        
+        linear_layout_request_money.setOnClickListener(v -> {
+             if (getActivity() != null) {
+                BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
+                if (bottomNavigationView != null) {
+                    bottomNavigationView.setSelectedItemId(R.id.menu_upi);
+                    // Optionally trigger a specific state in UPIFragment if needed
+                }
+            }
         });
     }
 

@@ -86,7 +86,30 @@
                     android:textSize="14sp"
                     android:fontFamily="sans-serif-black"
                     android:textColor="@color/apple_blue" />
+
+                <ImageView
+                    android:id="@+id/btn_copy_upi"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/ic_copy_apple"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@color/apple_blue" />
             </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_share_qr"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Save or Copy QR"
+                android:textColor="@color/apple_blue"
+                android:textAllCaps="false"
+                app:icon="@drawable/ic_copy_apple"
+                app:iconTint="@color/apple_blue" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
